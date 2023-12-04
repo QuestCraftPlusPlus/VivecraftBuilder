@@ -49,4 +49,4 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: Vivecraft
-        path: ${{ format(VivecraftMod/fabric/build/libs/vivecraft-{0}-{1}-fabric.jar, inputs.minecraft_version, inputs.vivecraft_version) }}
+        path: ${{ format('VivecraftMod/fabric/build/libs/vivecraft-{0}-{1}-fabric.jar', inputs.minecraft_version, inputs.vivecraft_version) }}
