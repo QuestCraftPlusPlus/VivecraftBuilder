@@ -10,17 +10,27 @@ name: Java CI with Gradle
 on:
   workflow_dispatch:
     inputs:
-      branch:
-        description: 'Branch name'
+      branch_name:
+        description: 'Vivecraft branch name'
         required: true
         default: 'Multiloader-1.20'
+        type: string
+      minecraft_version:
+        description: 'Minecraft version'
+        required: true
+        default: '1.20'
+        type: string
+      vivecraft_version:
+        description: 'Vivecraft version'
+        required: true
+        default: '1.1.5'
         type: string
 
 permissions:
   contents: read
 
 env:
-  BRANCH: ${{ inputs.branch }} 
+  BRANCH: ${{ inputs.branch_name }}
 
 jobs:
   build:
@@ -36,3 +46,7 @@ jobs:
         distribution: 'temurin'
     - name: Run Script
       run: .\build.bat
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Vivecraft
+        path: ${{ format("VivecraftMod/fabric/build/libs/vivecraft-{0}-{1}-fabric.jar", inputs.minecraft_version, inputs.vivecraft_version) }}
