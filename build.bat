@@ -13,5 +13,3 @@ echo Done!
 
 echo Returning to directory.
 cd ..
-
-pause
