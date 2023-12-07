@@ -7,7 +7,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 diff --git a/common/src/main/java/org/vivecraft/client_vr/provider/VRRenderer.java b/common/src/main/java/org/vivecraft/client_vr/provider/VRRenderer.java
 --- a/common/src/main/java/org/vivecraft/client_vr/provider/VRRenderer.java	(revision 96ffbcea670be83bcdc6879eff3b84624f356c22)
-+++ b/common/src/main/java/org/vivecraft/client_vr/provider/VRRenderer.java	(revision 3fe6e1cc49cf792c874d61fc083ad4beb1c40fa9)
++++ b/common/src/main/java/org/vivecraft/client_vr/provider/VRRenderer.java	(revision 365683eeb455912787d681f08782003766e1f7da)
 @@ -700,6 +700,8 @@
  
              try {
@@ -24,7 +24,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 diff --git a/common/src/main/java/org/vivecraft/client_vr/provider/openvr_lwjgl/OpenVRStereoRenderer.java b/common/src/main/java/org/vivecraft/client_vr/provider/openvr_lwjgl/OpenVRStereoRenderer.java
 --- a/common/src/main/java/org/vivecraft/client_vr/provider/openvr_lwjgl/OpenVRStereoRenderer.java	(revision 96ffbcea670be83bcdc6879eff3b84624f356c22)
-+++ b/common/src/main/java/org/vivecraft/client_vr/provider/openvr_lwjgl/OpenVRStereoRenderer.java	(revision 3fe6e1cc49cf792c874d61fc083ad4beb1c40fa9)
++++ b/common/src/main/java/org/vivecraft/client_vr/provider/openvr_lwjgl/OpenVRStereoRenderer.java	(revision 365683eeb455912787d681f08782003766e1f7da)
 @@ -7,10 +7,8 @@
  import net.minecraft.util.Tuple;
  import org.joml.Matrix4f;
@@ -155,7 +155,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 diff --git a/common/src/main/java/org/vivecraft/client_vr/render/VRShaders.java b/common/src/main/java/org/vivecraft/client_vr/render/VRShaders.java
 --- a/common/src/main/java/org/vivecraft/client_vr/render/VRShaders.java	(revision 96ffbcea670be83bcdc6879eff3b84624f356c22)
-+++ b/common/src/main/java/org/vivecraft/client_vr/render/VRShaders.java	(revision 3fe6e1cc49cf792c874d61fc083ad4beb1c40fa9)
++++ b/common/src/main/java/org/vivecraft/client_vr/render/VRShaders.java	(revision 365683eeb455912787d681f08782003766e1f7da)
 @@ -34,6 +34,8 @@
      public static AbstractUniform _Overlay_time;
      public static AbstractUniform _Overlay_BlackAlpha;
@@ -185,7 +185,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 diff --git a/common/src/main/java/org/vivecraft/client_vr/render/helpers/VRPassHelper.java b/common/src/main/java/org/vivecraft/client_vr/render/helpers/VRPassHelper.java
 --- a/common/src/main/java/org/vivecraft/client_vr/render/helpers/VRPassHelper.java	(revision 96ffbcea670be83bcdc6879eff3b84624f356c22)
-+++ b/common/src/main/java/org/vivecraft/client_vr/render/helpers/VRPassHelper.java	(revision 3fe6e1cc49cf792c874d61fc083ad4beb1c40fa9)
++++ b/common/src/main/java/org/vivecraft/client_vr/render/helpers/VRPassHelper.java	(revision 365683eeb455912787d681f08782003766e1f7da)
 @@ -189,6 +189,11 @@
              ProgramManager.glUseProgram(0);
              checkGLError("post overlay" + eye);
@@ -205,7 +205,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 diff --git a/common/src/main/java/org/vivecraft/client_vr/settings/VRSettings.java b/common/src/main/java/org/vivecraft/client_vr/settings/VRSettings.java
 --- a/common/src/main/java/org/vivecraft/client_vr/settings/VRSettings.java	(revision 96ffbcea670be83bcdc6879eff3b84624f356c22)
-+++ b/common/src/main/java/org/vivecraft/client_vr/settings/VRSettings.java	(revision 3fe6e1cc49cf792c874d61fc083ad4beb1c40fa9)
++++ b/common/src/main/java/org/vivecraft/client_vr/settings/VRSettings.java	(revision 365683eeb455912787d681f08782003766e1f7da)
 @@ -437,11 +437,11 @@
      @SettingField(VrOptions.CHAT_MESSAGE_STENCIL)
      public boolean showChatMessageStencil = true;
@@ -228,8 +228,8 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 diff --git a/common/src/main/java/org/vivecraft/mixin/client_vr/OpenVRMixin.java b/common/src/main/java/org/vivecraft/mixin/client_vr/OpenVRMixin.java
 new file mode 100644
---- /dev/null	(revision 3fe6e1cc49cf792c874d61fc083ad4beb1c40fa9)
-+++ b/common/src/main/java/org/vivecraft/mixin/client_vr/OpenVRMixin.java	(revision 3fe6e1cc49cf792c874d61fc083ad4beb1c40fa9)
+--- /dev/null	(revision 365683eeb455912787d681f08782003766e1f7da)
++++ b/common/src/main/java/org/vivecraft/mixin/client_vr/OpenVRMixin.java	(revision 365683eeb455912787d681f08782003766e1f7da)
 @@ -0,0 +1,68 @@
 +package org.vivecraft.mixin.client_vr;
 +
@@ -306,8 +306,8 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 diff --git a/common/src/main/java/org/vivecraft/utils/VLoader.java b/common/src/main/java/org/vivecraft/utils/VLoader.java
 new file mode 100644
---- /dev/null	(revision 3fe6e1cc49cf792c874d61fc083ad4beb1c40fa9)
-+++ b/common/src/main/java/org/vivecraft/utils/VLoader.java	(revision 3fe6e1cc49cf792c874d61fc083ad4beb1c40fa9)
+--- /dev/null	(revision 365683eeb455912787d681f08782003766e1f7da)
++++ b/common/src/main/java/org/vivecraft/utils/VLoader.java	(revision 365683eeb455912787d681f08782003766e1f7da)
 @@ -0,0 +1,15 @@
 +package org.vivecraft.utils;
 +
@@ -324,6 +324,21 @@ new file mode 100644
 +    public static native long getQueue();
 +    public static native int getQueueIndex();
 +}
+Index: common/src/main/resources/assets/minecraft/shaders/core/fovreduction.vsh
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.vsh b/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.vsh
+--- a/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.vsh	(revision 96ffbcea670be83bcdc6879eff3b84624f356c22)
++++ b/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.vsh	(revision 365683eeb455912787d681f08782003766e1f7da)
+@@ -7,5 +7,5 @@
+ out vec2 texCoordinates;
+ void main() {
+     gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
+-    texCoordinates = UV0;
++    texCoordinates = vec2(UV0.s, 1.0 - UV0.t);
+ }
 Index: common/src/main/resources/assets/minecraft/shaders/core/gsr.fsh
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
@@ -331,8 +346,8 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 diff --git a/common/src/main/resources/assets/minecraft/shaders/core/gsr.fsh b/common/src/main/resources/assets/minecraft/shaders/core/gsr.fsh
 new file mode 100644
---- /dev/null	(revision 3fe6e1cc49cf792c874d61fc083ad4beb1c40fa9)
-+++ b/common/src/main/resources/assets/minecraft/shaders/core/gsr.fsh	(revision 3fe6e1cc49cf792c874d61fc083ad4beb1c40fa9)
+--- /dev/null	(revision 365683eeb455912787d681f08782003766e1f7da)
++++ b/common/src/main/resources/assets/minecraft/shaders/core/gsr.fsh	(revision 365683eeb455912787d681f08782003766e1f7da)
 @@ -0,0 +1,142 @@
 +#version 460 core
 +
@@ -483,8 +498,8 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 diff --git a/common/src/main/resources/assets/minecraft/shaders/core/gsr.json b/common/src/main/resources/assets/minecraft/shaders/core/gsr.json
 new file mode 100644
---- /dev/null	(revision 3fe6e1cc49cf792c874d61fc083ad4beb1c40fa9)
-+++ b/common/src/main/resources/assets/minecraft/shaders/core/gsr.json	(revision 3fe6e1cc49cf792c874d61fc083ad4beb1c40fa9)
+--- /dev/null	(revision 365683eeb455912787d681f08782003766e1f7da)
++++ b/common/src/main/resources/assets/minecraft/shaders/core/gsr.json	(revision 365683eeb455912787d681f08782003766e1f7da)
 @@ -0,0 +1,35 @@
 +{
 +  "blend": {
@@ -528,7 +543,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 diff --git a/common/src/main/resources/assets/vivecraft/input/oculus_defaults.json b/common/src/main/resources/assets/vivecraft/input/oculus_defaults.json
 --- a/common/src/main/resources/assets/vivecraft/input/oculus_defaults.json	(revision 96ffbcea670be83bcdc6879eff3b84624f356c22)
-+++ b/common/src/main/resources/assets/vivecraft/input/oculus_defaults.json	(revision 3fe6e1cc49cf792c874d61fc083ad4beb1c40fa9)
++++ b/common/src/main/resources/assets/vivecraft/input/oculus_defaults.json	(revision 365683eeb455912787d681f08782003766e1f7da)
 @@ -142,7 +142,7 @@
              }
            },
@@ -647,7 +662,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 diff --git a/common/src/main/resources/assets/vivecraft/input/vive_defaults.json b/common/src/main/resources/assets/vivecraft/input/vive_defaults.json
 --- a/common/src/main/resources/assets/vivecraft/input/vive_defaults.json	(revision 96ffbcea670be83bcdc6879eff3b84624f356c22)
-+++ b/common/src/main/resources/assets/vivecraft/input/vive_defaults.json	(revision 3fe6e1cc49cf792c874d61fc083ad4beb1c40fa9)
++++ b/common/src/main/resources/assets/vivecraft/input/vive_defaults.json	(revision 365683eeb455912787d681f08782003766e1f7da)
 @@ -146,15 +146,12 @@
          },
          {
@@ -885,7 +900,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 diff --git a/common/src/main/resources/vivecraft.mixins.json b/common/src/main/resources/vivecraft.mixins.json
 --- a/common/src/main/resources/vivecraft.mixins.json	(revision 96ffbcea670be83bcdc6879eff3b84624f356c22)
-+++ b/common/src/main/resources/vivecraft.mixins.json	(revision 3fe6e1cc49cf792c874d61fc083ad4beb1c40fa9)
++++ b/common/src/main/resources/vivecraft.mixins.json	(revision 365683eeb455912787d681f08782003766e1f7da)
 @@ -73,7 +73,8 @@
      "client_vr.world.entity.projectile.FireworkRocketEntityVRMixin",
      "client_vr.world.level.block.DoorBlockVRMixin",
@@ -903,7 +918,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 diff --git a/fabric/build.gradle b/fabric/build.gradle
 --- a/fabric/build.gradle	(revision 96ffbcea670be83bcdc6879eff3b84624f356c22)
-+++ b/fabric/build.gradle	(revision 3fe6e1cc49cf792c874d61fc083ad4beb1c40fa9)
++++ b/fabric/build.gradle	(revision 365683eeb455912787d681f08782003766e1f7da)
 @@ -74,10 +74,10 @@
      include(implementation('com.electronwill.night-config:toml:3.6.6'))
      include(implementation('com.electronwill.night-config:core:3.6.6'))
