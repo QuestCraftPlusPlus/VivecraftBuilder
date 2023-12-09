@@ -130,7 +130,7 @@ diff --git a/common/src/main/java/org/vivecraft/client_vr/provider/openvr_lwjgl/
 +            VLoader.getQueueIndex(),
 +            lwidth,
 +            lheight,
-+            37,
++            43,
 +            1
 +        );
 +        this.openvr.texType0.handle(leftData.address());
@@ -166,7 +166,7 @@ diff --git a/common/src/main/java/org/vivecraft/client_vr/provider/openvr_lwjgl/
 +            VLoader.getQueueIndex(),
 +            lwidth,
 +            lheight,
-+            37,
++            43,
 +            1
 +        );
 +        this.openvr.texType1.handle(rightData.address());
