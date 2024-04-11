@@ -1,70 +1,340 @@
 Subject: [PATCH] QCXR
 ---
-Index: common/src/main/java/org/vivecraft/client_vr/provider/VRRenderer.java
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
+Index: common/src/main/java/org/vivecraft/client/gui/screens/GarbageCollectorScreen.java
 ===================================================================
-diff --git a/common/src/main/java/org/vivecraft/client_vr/provider/VRRenderer.java b/common/src/main/java/org/vivecraft/client_vr/provider/VRRenderer.java
---- a/common/src/main/java/org/vivecraft/client_vr/provider/VRRenderer.java	(revision dc353aa386ade995285701136a94c3c25a3a3fe1)
-+++ b/common/src/main/java/org/vivecraft/client_vr/provider/VRRenderer.java	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
-@@ -710,6 +710,8 @@
-                 ShaderHelper.checkGLError("init FOV shader");
-                 VRShaders.setupPortalShaders();
-                 ShaderHelper.checkGLError("init portal shader");
-+                VRShaders.setupGSR();
-+                ShaderHelper.checkGLError("init gsr shader");
-                 minecraft.gameRenderer.checkEntityPostEffect(minecraft.getCameraEntity());
-             } catch (Exception exception1) {
-                 System.out.println(exception1.getMessage());
-Index: common/src/main/java/org/vivecraft/client_vr/provider/openvr_lwjgl/OpenVRStereoRenderer.java
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
+diff --git a/common/src/main/java/org/vivecraft/client/gui/screens/GarbageCollectorScreen.java b/common/src/main/java/org/vivecraft/client/gui/screens/GarbageCollectorScreen.java
+deleted file mode 100644
+--- a/common/src/main/java/org/vivecraft/client/gui/screens/GarbageCollectorScreen.java	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ /dev/null	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
+@@ -1,80 +0,0 @@
+-package org.vivecraft.client.gui.screens;
+-
+-import net.minecraft.ChatFormatting;
+-import net.minecraft.client.Minecraft;
+-import net.minecraft.client.gui.GuiGraphics;
+-import net.minecraft.client.gui.components.Button;
+-import net.minecraft.client.gui.screens.ConfirmLinkScreen;
+-import net.minecraft.client.gui.screens.Screen;
+-import net.minecraft.network.chat.ClickEvent;
+-import net.minecraft.network.chat.CommonComponents;
+-import net.minecraft.network.chat.Component;
+-import net.minecraft.network.chat.HoverEvent;
+-import org.jetbrains.annotations.NotNull;
+-import org.vivecraft.client.gui.widgets.TextScrollWidget;
+-import org.vivecraft.client_vr.ClientDataHolderVR;
+-
+-
+-public class GarbageCollectorScreen extends Screen {
+-
+-    private final Screen lastScreen;
+-    private final String currentGarbageCollector;
+-    private final static String guideURL = "https://github.com/Vivecraft/VivecraftMod/wiki/Memory-and-GC-Setup";
+-
+-    public GarbageCollectorScreen(String currentGarbageCollector) {
+-        super(Component.translatable("vivecraft.messages.gctitle"));
+-        this.lastScreen = Minecraft.getInstance().screen;
+-        this.currentGarbageCollector = currentGarbageCollector;
+-    }
+-
+-    protected void init() {
+-        Component message = Component.translatable("vivecraft.messages.gcinfo",
+-            Component.literal(currentGarbageCollector).withStyle(s -> s.withColor(ChatFormatting.RED)),
+-            Component.literal("ZGC"),
+-            Component.literal(Integer.toString(6)),
+-            Component.literal("-XX:+UseZGC").withStyle(s -> s
+-                .withColor(ChatFormatting.GOLD)
+-                .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, "-XX:+UseZGC"))
+-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("chat.copy.click")))),
+-            Component.translatable("vivecraft.gui.openguide").withStyle(style -> style
+-                .withUnderlined(true)
+-                .withColor(ChatFormatting.GREEN)
+-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, CommonComponents.GUI_OPEN_IN_BROWSER))
+-                .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, guideURL))));
+-        this.addRenderableWidget(new TextScrollWidget(this.width / 2 - 155, 30, 310, this.height - 30 - 60, message));
+-
+-        this.addRenderableWidget(new Button.Builder(Component.translatable("vivecraft.gui.dontshowagain"), (p) -> {
+-            ClientDataHolderVR.getInstance().vrSettings.disableGarbageCollectorMessage = true;
+-            ClientDataHolderVR.getInstance().vrSettings.saveOptions();
+-            Minecraft.getInstance().setScreen(this.lastScreen);
+-        })
+-            .pos(this.width / 2 - 155, this.height - 56)
+-            .size(150, 20)
+-            .build());
+-
+-        this.addRenderableWidget(new Button.Builder(Component.translatable("vivecraft.gui.ok"), (p) ->
+-            onClose())
+-            .pos(this.width / 2 + 5, this.height - 56)
+-            .size(150, 20)
+-            .build());
+-
+-        this.addRenderableWidget(new Button.Builder(Component.translatable("vivecraft.gui.openguide"),
+-            ConfirmLinkScreen.confirmLink(this, guideURL))
+-            .pos(this.width / 2 - 75, this.height - 32)
+-            .size(150, 20)
+-            .build());
+-    }
+-
+-    @Override
+-    public void render(@NotNull GuiGraphics guiGraphics, int i, int j, float f) {
+-        this.renderBackground(guiGraphics, i, j, f);
+-        guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 15, 16777215);
+-        super.render(guiGraphics, i, j, f);
+-    }
+-
+-    @Override
+-    public void onClose() {
+-        ClientDataHolderVR.getInstance().incorrectGarbageCollector = "";
+-        this.minecraft.setScreen(lastScreen);
+-    }
+-}
+Index: common/src/main/java/org/vivecraft/client/gui/screens/UpdateScreen.java
 ===================================================================
-diff --git a/common/src/main/java/org/vivecraft/client_vr/provider/openvr_lwjgl/OpenVRStereoRenderer.java b/common/src/main/java/org/vivecraft/client_vr/provider/openvr_lwjgl/OpenVRStereoRenderer.java
---- a/common/src/main/java/org/vivecraft/client_vr/provider/openvr_lwjgl/OpenVRStereoRenderer.java	(revision dc353aa386ade995285701136a94c3c25a3a3fe1)
-+++ b/common/src/main/java/org/vivecraft/client_vr/provider/openvr_lwjgl/OpenVRStereoRenderer.java	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
-@@ -18,6 +18,7 @@
- import org.vivecraft.client_vr.provider.VRRenderer;
- import org.vivecraft.client_vr.render.RenderConfigException;
- import org.vivecraft.client_vr.render.RenderPass;
-+import org.vivecraft.util.VLoader;
- 
- import static org.lwjgl.openvr.VRCompositor.VRCompositor_PostPresentHandoff;
- import static org.lwjgl.openvr.VRCompositor.VRCompositor_Submit;
-@@ -91,7 +92,7 @@
-         RenderSystem.bindTexture(this.LeftEyeTextureId);
-         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
--        GlStateManager._texImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, lwidth, lheight, 0, GL11.GL_RGBA, GL11.GL_INT, null);
-+        GlStateManager._texImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, lwidth, lheight, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, null);
-         RenderSystem.bindTexture(i);
-         this.openvr.texType0.handle(this.LeftEyeTextureId);
-         this.openvr.texType0.eColorSpace(VR.EColorSpace_ColorSpace_Gamma);
-@@ -102,11 +103,13 @@
-         RenderSystem.bindTexture(this.RightEyeTextureId);
-         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
--        GlStateManager._texImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, lwidth, lheight, 0, GL11.GL_RGBA, GL11.GL_INT, null);
-+        GlStateManager._texImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, lwidth, lheight, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, null);
-         RenderSystem.bindTexture(i);
-         this.openvr.texType1.handle(this.RightEyeTextureId);
-         this.openvr.texType1.eColorSpace(VR.EColorSpace_ColorSpace_Gamma);
-         this.openvr.texType1.eType(VR.ETextureType_TextureType_OpenGL);
-+
-+        VLoader.setEGLGlobal();
-     }
- 
-     public boolean endFrame(RenderPass eye) {
+diff --git a/common/src/main/java/org/vivecraft/client/gui/screens/UpdateScreen.java b/common/src/main/java/org/vivecraft/client/gui/screens/UpdateScreen.java
+deleted file mode 100644
+--- a/common/src/main/java/org/vivecraft/client/gui/screens/UpdateScreen.java	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ /dev/null	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
+@@ -1,57 +0,0 @@
+-package org.vivecraft.client.gui.screens;
+-
+-import net.minecraft.client.Minecraft;
+-import net.minecraft.client.gui.GuiGraphics;
+-import net.minecraft.client.gui.components.Button;
+-import net.minecraft.client.gui.screens.ConfirmLinkScreen;
+-import net.minecraft.client.gui.screens.Screen;
+-import net.minecraft.network.chat.Component;
+-import org.jetbrains.annotations.NotNull;
+-import org.vivecraft.client.gui.widgets.TextScrollWidget;
+-import org.vivecraft.client.utils.UpdateChecker;
+-
+-
+-public class UpdateScreen extends Screen {
+-
+-    private final Screen lastScreen;
+-
+-    public UpdateScreen() {
+-        super(Component.translatable("vivecraft.messages.updateTitle"));
+-        lastScreen = Minecraft.getInstance().screen;
+-    }
+-
+-    protected void init() {
+-
+-        this.addRenderableWidget(new TextScrollWidget(this.width / 2 - 155, 30, 310, this.height - 30 - 60, UpdateChecker.changelog));
+-
+-        this.addRenderableWidget(new Button.Builder(Component.translatable("vivecraft.gui.downloadfrom", Component.literal("Modrinth")),
+-            ConfirmLinkScreen.confirmLink(this, "https://modrinth.com/mod/vivecraft"))
+-            .pos(this.width / 2 - 155, this.height - 56)
+-            .size(150, 20)
+-            .build());
+-
+-        this.addRenderableWidget(new Button.Builder(Component.translatable("vivecraft.gui.downloadfrom", Component.literal("CurseForge")),
+-            ConfirmLinkScreen.confirmLink(this, "https://www.curseforge.com/minecraft/mc-mods/vivecraft"))
+-            .pos(this.width / 2 + 5, this.height - 56)
+-            .size(150, 20)
+-            .build());
+-
+-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.back"), (p) ->
+-            Minecraft.getInstance().setScreen(this.lastScreen))
+-            .pos(this.width / 2 - 75, this.height - 32)
+-            .size(150, 20)
+-            .build());
+-    }
+-
+-    @Override
+-    public void render(@NotNull GuiGraphics guiGraphics, int i, int j, float f) {
+-        this.renderBackground(guiGraphics, i, j, f);
+-        guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 15, 16777215);
+-        super.render(guiGraphics, i, j, f);
+-    }
+-
+-    @Override
+-    public void onClose() {
+-        this.minecraft.setScreen(lastScreen);
+-    }
+-}
+Index: common/src/main/java/org/vivecraft/client/utils/UpdateChecker.java
+===================================================================
+diff --git a/common/src/main/java/org/vivecraft/client/utils/UpdateChecker.java b/common/src/main/java/org/vivecraft/client/utils/UpdateChecker.java
+deleted file mode 100644
+--- a/common/src/main/java/org/vivecraft/client/utils/UpdateChecker.java	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ /dev/null	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
+@@ -1,169 +0,0 @@
+-package org.vivecraft.client.utils;
+-
+-import com.google.gson.JsonElement;
+-import com.google.gson.JsonObject;
+-import com.google.gson.JsonParser;
+-import net.minecraft.SharedConstants;
+-import org.vivecraft.client.Xplat;
+-import org.vivecraft.client_vr.ClientDataHolderVR;
+-import org.vivecraft.client_vr.settings.VRSettings;
+-import org.vivecraft.server.config.ServerConfig;
+-
+-import java.io.BufferedReader;
+-import java.io.IOException;
+-import java.io.InputStream;
+-import java.io.InputStreamReader;
+-import java.net.HttpURLConnection;
+-import java.net.URL;
+-import java.util.Collections;
+-import java.util.LinkedList;
+-import java.util.List;
+-import java.util.stream.Collectors;
+-
+-public class UpdateChecker {
+-
+-    public static boolean hasUpdate = false;
+-
+-    public static String changelog = "";
+-
+-    public static String newestVersion = "";
+-
+-    public static boolean checkForUpdates() {
+-        System.out.println("Checking for Vivecraft Updates");
+-
+-        char updateType;
+-        if (Xplat.isDedicatedServer()) {
+-            // server
+-            updateType = ServerConfig.checkForUpdateType.get().charAt(0);
+-        } else {
+-            // client
+-            updateType = switch (ClientDataHolderVR.getInstance().vrSettings.updateType) {
+-                case RELEASE -> 'r';
+-                case BETA -> 'b';
+-                case ALPHA -> 'a';
+-            };
+-        }
+-
+-        try {
+-            String apiURL = "https://api.modrinth.com/v2/project/vivecraft/version?loaders=[%22" + Xplat.getModloader() + "%22]&game_versions=[%22" + SharedConstants.VERSION_STRING + "%22]";
+-            HttpURLConnection conn = (HttpURLConnection) new URL(apiURL).openConnection();
+-            // 10 seconds read and connect timeout
+-            conn.setConnectTimeout(10000);
+-            conn.setReadTimeout(10000);
+-            conn.setRequestProperty("Accept", "application/json,*/*");
+-            conn.connect();
+-
+-            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+-                VRSettings.logger.error("Error " + conn.getResponseCode() + " fetching Vivecraft updates");
+-                return false;
+-            }
+-
+-            JsonElement j = JsonParser.parseString(inputStreamToString(conn.getInputStream()));
+-
+-            List<Version> versions = new LinkedList<>();
+-
+-            if (j.isJsonArray()) {
+-                for (JsonElement element : j.getAsJsonArray()) {
+-                    if (element.isJsonObject()) {
+-                        JsonObject obj = element.getAsJsonObject();
+-                        versions.add(
+-                            new Version(obj.get("name").getAsString(),
+-                                obj.get("version_number").getAsString(),
+-                                obj.get("changelog").getAsString()));
+-                    }
+-                }
+-            }
+-            // sort the versions, modrinth doesn't guarantee them to be sorted.
+-            Collections.sort(versions);
+-
+-            String currentVersionNumber = Xplat.getModVersion() + "-" + Xplat.getModloader();
+-            Version current = new Version(currentVersionNumber, currentVersionNumber, "");
+-
+-            for (Version v : versions) {
+-                if (v.isVersionType(updateType) && current.compareTo(v) > 0) {
+-                    changelog += "§a" + v.fullVersion + "§r" + ": \n" + v.changelog + "\n\n";
+-                    if (newestVersion.isEmpty()) {
+-                        newestVersion = v.fullVersion;
+-                    }
+-                    hasUpdate = true;
+-                }
+-            }
+-            // no carriage returns please
+-            changelog = changelog.replaceAll("\\r", "");
+-            if (hasUpdate) {
+-                VRSettings.logger.info("Vivecraft update found: " + newestVersion);
+-            }
+-        } catch (IOException e) {
+-            e.printStackTrace();
+-        }
+-        return hasUpdate;
+-    }
+-
+-    private static String inputStreamToString(InputStream inputStream) {
+-        return new BufferedReader(new InputStreamReader(inputStream))
+-            .lines().collect(Collectors.joining("\n"));
+-    }
+-
+-    private static class Version implements Comparable<Version> {
+-
+-        public String fullVersion;
+-
+-        public String changelog;
+-
+-        public int major;
+-        public int minor;
+-        public int patch;
+-        int alpha = 0;
+-        int beta = 0;
+-        boolean featureTest = false;
+-
+-        public Version(String version, String version_number, String changelog) {
+-            this.fullVersion = version;
+-            this.changelog = changelog;
+-            String[] parts = version_number.split("-");
+-            int viveVersionIndex = parts.length - 2;
+-            // parts should be [mc version]-(pre/rc)-[vive version]-(vive a/b/test)-[mod loader]
+-            if (!parts[viveVersionIndex].contains(".")) {
+-                viveVersionIndex = parts.length - 3;
+-                // prerelease
+-                if (parts[parts.length - 1].matches("a\\d+")) {
+-                    alpha = Integer.parseInt(parts[parts.length - 1].replaceAll("\\D+", ""));
+-                } else if (parts[parts.length - 1].matches("b\\d+")) {
+-                    beta = Integer.parseInt(parts[parts.length - 1].replaceAll("\\D+", ""));
+-                } else {
+-                    featureTest = true;
+-                }
+-            }
+-            String[] ints = parts[viveVersionIndex].split("\\.");
+-            // remove all letters, since stupid me put a letter in one version
+-            major = Integer.parseInt(ints[0].replaceAll("\\D+", ""));
+-            minor = Integer.parseInt(ints[1].replaceAll("\\D+", ""));
+-            patch = Integer.parseInt(ints[2].replaceAll("\\D+", ""));
+-        }
+-
+-        @Override
+-        public int compareTo(UpdateChecker.Version o) {
+-            long result = this.compareNumber() - o.compareNumber();
+-            if (result < 0) {
+-                return 1;
+-            } else if (result == 0L) {
+-                return 0;
+-            }
+-            return -1;
+-        }
+-
+-        public boolean isVersionType(char versionType) {
+-            return switch (versionType) {
+-                case 'r' -> beta == 0 && alpha == 0 && !featureTest;
+-                case 'b' -> beta >= 0 && alpha == 0 && !featureTest;
+-                case 'a' -> alpha >= 0 && !featureTest;
+-                default -> false;
+-            };
+-        }
+-
+-        // two digits per segment, should be enough right?
+-        private long compareNumber() {
+-            return alpha + beta * 100L + (alpha + beta == 0 || featureTest ? 1000L : 0L) + patch * 100000L + minor * 10000000L + major * 1000000000L;
+-        }
+-    }
+-}
 Index: common/src/main/java/org/vivecraft/client_vr/render/VRShaders.java
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
 diff --git a/common/src/main/java/org/vivecraft/client_vr/render/VRShaders.java b/common/src/main/java/org/vivecraft/client_vr/render/VRShaders.java
---- a/common/src/main/java/org/vivecraft/client_vr/render/VRShaders.java	(revision dc353aa386ade995285701136a94c3c25a3a3fe1)
-+++ b/common/src/main/java/org/vivecraft/client_vr/render/VRShaders.java	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
+--- a/common/src/main/java/org/vivecraft/client_vr/render/VRShaders.java	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/java/org/vivecraft/client_vr/render/VRShaders.java	(date 1712807490868)
 @@ -34,6 +34,8 @@
      public static AbstractUniform _Overlay_time;
      public static AbstractUniform _Overlay_BlackAlpha;
@@ -87,500 +357,14 @@ diff --git a/common/src/main/java/org/vivecraft/client_vr/render/VRShaders.java 
      public static void setupDepthMask() throws Exception {
          depthMaskShader = new ShaderInstance(Minecraft.getInstance().getResourceManager(), "mixedreality", DefaultVertexFormat.POSITION_TEX);
  
-Index: common/src/main/java/org/vivecraft/client_vr/render/helpers/VRPassHelper.java
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/common/src/main/java/org/vivecraft/client_vr/render/helpers/VRPassHelper.java b/common/src/main/java/org/vivecraft/client_vr/render/helpers/VRPassHelper.java
---- a/common/src/main/java/org/vivecraft/client_vr/render/helpers/VRPassHelper.java	(revision dc353aa386ade995285701136a94c3c25a3a3fe1)
-+++ b/common/src/main/java/org/vivecraft/client_vr/render/helpers/VRPassHelper.java	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
-@@ -189,6 +189,11 @@
-             ProgramManager.glUseProgram(0);
-             checkGLError("post overlay" + eye);
-             mc.getProfiler().pop();
-+
-+            VRShaders.ViewportInfo.setSafe(0.0f, 0.0f,  dataHolder.vrRenderer.framebufferEye0.viewWidth, dataHolder.vrRenderer.framebufferEye0.viewHeight);
-+            ((RenderTargetExtension) rendertarget).vivecraft$blitToScreen(VRShaders.gsrShader, 0, dataHolder.vrRenderer.framebufferEye0.viewWidth, dataHolder.vrRenderer.framebufferEye0.viewHeight, 0, false, 0,  0, true);
-+            ProgramManager.glUseProgram(0);
-+            checkGLError("post overlay" + eye);
-         }
- 
-         if (dataHolder.currentPass == RenderPass.CAMERA) {
-Index: common/src/main/java/org/vivecraft/client_vr/settings/VRSettings.java
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/common/src/main/java/org/vivecraft/client_vr/settings/VRSettings.java b/common/src/main/java/org/vivecraft/client_vr/settings/VRSettings.java
---- a/common/src/main/java/org/vivecraft/client_vr/settings/VRSettings.java	(revision dc353aa386ade995285701136a94c3c25a3a3fe1)
-+++ b/common/src/main/java/org/vivecraft/client_vr/settings/VRSettings.java	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
-@@ -449,13 +449,13 @@
-     @SettingField(VrOptions.CHAT_MESSAGE_STENCIL)
-     public boolean showChatMessageStencil = true;
-     @SettingField(value = VrOptions.VR_ENABLED, config = "vrEnabled")
--    public boolean vrEnabled = false;
-+    public boolean vrEnabled = true;
-     @SettingField(VrOptions.VR_REMEMBER_ENABLED)
-     public boolean rememberVr = true;
-     @SettingField(VrOptions.VR_HOTSWITCH)
--    public boolean vrHotswitchingEnabled = true;
-+    public boolean vrHotswitchingEnabled = false;
-     @SettingField(value = VrOptions.VR_TOGGLE_BUTTON_VISIBLE, config = "vrToggleButtonEnabled")
--    public boolean vrToggleButtonEnabled = true;
-+    public boolean vrToggleButtonEnabled = false;
-     @SettingField(value = VrOptions.VR_SETTINGS_BUTTON_VISIBLE, config = "vrSettingsButtonEnabled")
-     public boolean vrSettingsButtonEnabled = true;
-     @SettingField(value = VrOptions.VR_SETTINGS_BUTTON_POSITION, config = "vrSettingsButtonPositionLeft")
-Index: common/src/main/java/org/vivecraft/mixin/client_vr/OpenVRMixin.java
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/common/src/main/java/org/vivecraft/mixin/client_vr/OpenVRMixin.java b/common/src/main/java/org/vivecraft/mixin/client_vr/OpenVRMixin.java
-new file mode 100644
---- /dev/null	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
-+++ b/common/src/main/java/org/vivecraft/mixin/client_vr/OpenVRMixin.java	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
-@@ -0,0 +1,67 @@
-+package org.vivecraft.mixin.client_vr;
-+
-+import org.lwjgl.openvr.OpenVR;
-+import org.spongepowered.asm.mixin.Mixin;
-+import org.spongepowered.asm.mixin.Overwrite;
-+import org.spongepowered.asm.mixin.Shadow;
-+
-+import javax.annotation.Nullable;
-+import java.util.function.LongFunction;
-+
-+import static org.lwjgl.openvr.VR.*;
-+
-+@Mixin(value = OpenVR.class, remap = false)
-+public abstract class OpenVRMixin {
-+    @Shadow @Nullable public static OpenVR.IVRSystem VRSystem;
-+    @Shadow @Nullable public static OpenVR.IVRChaperone VRChaperone;
-+    @Shadow @Nullable public static OpenVR.IVRChaperoneSetup VRChaperoneSetup;
-+    @Shadow @Nullable public static OpenVR.IVRCompositor VRCompositor;
-+    @Shadow @Nullable public static OpenVR.IVROverlay VROverlay;
-+    @Shadow @Nullable public static OpenVR.IVRResources VRResources;
-+    @Shadow @Nullable public static OpenVR.IVRRenderModels VRRenderModels;
-+    @Shadow @Nullable public static OpenVR.IVRExtendedDisplay VRExtendedDisplay;
-+    @Shadow @Nullable public static OpenVR.IVRSettings VRSettings;
-+    @Shadow @Nullable public static OpenVR.IVRApplications VRApplications;
-+    @Shadow @Nullable public static OpenVR.IVRTrackedCamera VRTrackedCamera;
-+    @Shadow @Nullable public static OpenVR.IVRScreenshots VRScreenshots;
-+    @Shadow @Nullable public static OpenVR.IVRDriverManager VRDriverManager;
-+    @Shadow @Nullable public static OpenVR.IVRInput VRInput;
-+    @Shadow @Nullable public static OpenVR.IVRIOBuffer VRIOBuffer;
-+    @Shadow @Nullable public static OpenVR.IVRSpatialAnchors VRSpatialAnchors;
-+    @Shadow @Nullable public static OpenVR.IVRNotifications VRNotifications;
-+    @Shadow private static int token;
-+
-+    @Shadow
-+    @Nullable
-+    private static <T> T getGenericInterface(String interfaceNameVersion, LongFunction<T> supplier) {
-+        return null;
-+    }
-+
-+    /**
-+     * @author
-+     * @reason
-+     */
-+    @Overwrite
-+    public static void create(int tok) {
-+        token = tok;
-+
-+        VRSystem = getGenericInterface(IVRSystem_Version, OpenVR.IVRSystem::new);
-+        VRChaperone = getGenericInterface(IVRChaperone_Version, OpenVR.IVRChaperone::new);
-+        VRChaperoneSetup = getGenericInterface(IVRChaperoneSetup_Version, OpenVR.IVRChaperoneSetup::new);
-+        VRCompositor = getGenericInterface(IVRCompositor_Version, OpenVR.IVRCompositor::new);
-+        VROverlay = getGenericInterface(IVROverlay_Version, OpenVR.IVROverlay::new);
-+        // VRResources = getGenericInterface(IVRResources_Version, OpenVR.IVRResources::new);
-+        VRRenderModels = getGenericInterface(IVRRenderModels_Version, OpenVR.IVRRenderModels::new);
-+        VRExtendedDisplay = getGenericInterface(IVRExtendedDisplay_Version, OpenVR.IVRExtendedDisplay::new);
-+        VRSettings = getGenericInterface(IVRSettings_Version, OpenVR.IVRSettings::new);
-+        VRApplications = getGenericInterface(IVRApplications_Version, OpenVR.IVRApplications::new);
-+        // VRTrackedCamera = getGenericInterface(IVRTrackedCamera_Version, OpenVR.IVRTrackedCamera::new);
-+        VRScreenshots = getGenericInterface(IVRScreenshots_Version, OpenVR.IVRScreenshots::new);
-+        // VRDriverManager = getGenericInterface(IVRDriverManager_Version, OpenVR.IVRDriverManager::new);
-+        VRInput = getGenericInterface(IVRInput_Version, OpenVR.IVRInput::new);
-+        // VRIOBuffer = getGenericInterface(IVRIOBuffer_Version, OpenVR.IVRIOBuffer::new);
-+        // VRSpatialAnchors = getGenericInterface(IVRSpatialAnchors_Version, OpenVR.IVRSpatialAnchors::new);
-+        // VRDebug = getGenericInterface(IVRDebug_Version, OpenVR.IVRDebug::new);
-+        // VRNotifications = getGenericInterface(IVRNotifications_Version, OpenVR.IVRNotifications::new);
-+    }
-+}
-Index: common/src/main/java/org/vivecraft/util/VLoader.java
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/common/src/main/java/org/vivecraft/util/VLoader.java b/common/src/main/java/org/vivecraft/util/VLoader.java
-new file mode 100644
---- /dev/null	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
-+++ b/common/src/main/java/org/vivecraft/util/VLoader.java	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
-@@ -0,0 +1,9 @@
-+package org.vivecraft.util;
-+
-+public class VLoader {
-+    static {
-+        System.loadLibrary("openvr_api");
-+    }
-+
-+    public static native void setEGLGlobal();
-+}
-Index: common/src/main/resources/assets/minecraft/shaders/core/fovreduction.fsh
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.fsh b/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.fsh
---- a/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.fsh	(revision dc353aa386ade995285701136a94c3c25a3a3fe1)
-+++ b/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.fsh	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
-@@ -2,7 +2,7 @@
- 
- uniform sampler2D Sampler0;
- uniform float circle_radius;
--uniform float circle_offset = 0.1;
-+uniform float circle_offset;
- uniform float border;
- 
- uniform float water;
-@@ -22,7 +22,7 @@
- const vec4 orange = vec4(.25, .125, 0, 1.0);
- const float pi = 3.14159265;
- 
--uniform int eye = 0;
-+uniform int eye;
- 
- void main(){
- 
-Index: common/src/main/resources/assets/minecraft/shaders/core/fovreduction.vsh
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.vsh b/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.vsh
---- a/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.vsh	(revision dc353aa386ade995285701136a94c3c25a3a3fe1)
-+++ b/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.vsh	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
-@@ -7,5 +7,5 @@
- out vec2 texCoordinates;
- void main() {
-     gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
--    texCoordinates = UV0;
-+    texCoordinates = vec2(UV0.s, 1.0 - UV0.t);
- }
-Index: common/src/main/resources/assets/minecraft/shaders/core/gsr.fsh
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/common/src/main/resources/assets/minecraft/shaders/core/gsr.fsh b/common/src/main/resources/assets/minecraft/shaders/core/gsr.fsh
-new file mode 100644
---- /dev/null	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
-+++ b/common/src/main/resources/assets/minecraft/shaders/core/gsr.fsh	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
-@@ -0,0 +1,142 @@
-+#version 450 core
-+
-+//============================================================================================================
-+//
-+//
-+//                  Copyright (c) 2023, Qualcomm Innovation Center, Inc. All rights reserved.
-+//                              SPDX-License-Identifier: BSD-3-Clause
-+//
-+//============================================================================================================
-+
-+precision mediump float;
-+precision highp int;
-+
-+////////////////////////
-+// USER CONFIGURATION //
-+////////////////////////
-+
-+/*
-+* Operation modes:
-+* RGBA -> 1
-+* RGBY -> 3
-+* LERP -> 4
-+*/
-+#define OperationMode 1
-+
-+#define EdgeThreshold 4.0/255.0
-+
-+#define EdgeSharpness 2.0
-+
-+// #define UseUniformBlock
-+
-+////////////////////////
-+////////////////////////
-+////////////////////////
-+
-+#if defined(UseUniformBlock)
-+layout (set=0, binding = 0) uniform UniformBlock
-+{
-+	highp vec4 ViewportInfo[1];
-+};
-+layout(set = 0, binding = 1) uniform mediump sampler2D Sampler0;
-+#else
-+uniform vec4 ViewportInfo[1];
-+uniform sampler2D Sampler0;
-+#endif
-+
-+in vec2 texCoordinates;
-+out vec4 fragColor;
-+
-+float fastLanczos2(float x)
-+{
-+	float wA = x-4.0;
-+	float wB = x*wA-wA;
-+	wA *= wA;
-+	return wB*wA;
-+}
-+vec2 weightY(float dx, float dy,float c, float std)
-+{
-+	float x = ((dx*dx)+(dy* dy))* 0.55 + clamp(abs(c)*std, 0.0, 1.0);
-+	float w = fastLanczos2(x);
-+	return vec2(w, w * c);
-+}
-+
-+void main()
-+{
-+	const int mode = OperationMode;
-+	float edgeThreshold = EdgeThreshold;
-+	float edgeSharpness = EdgeSharpness;
-+
-+	vec4 color;
-+	if(mode == 1)
-+		color.xyz = textureLod(Sampler0,texCoordinates.xy,0.0).xyz;
-+	else
-+		color.xyzw = textureLod(Sampler0,texCoordinates.xy,0.0).xyzw;
-+
-+	float xCenter;
-+	xCenter = abs(texCoordinates.x+-0.5);
-+	float yCenter;
-+	yCenter = abs(texCoordinates.y+-0.5);
-+
-+	//todo: config the SR region based on needs
-+	//if ( mode!=4 && xCenter*xCenter+yCenter*yCenter<=0.4 * 0.4)
-+	if ( mode!=4)
-+	{
-+		vec2 imgCoord = ((texCoordinates.xy*ViewportInfo[0].zw)+vec2(-0.5,0.5));
-+		vec2 imgCoordPixel = floor(imgCoord);
-+		vec2 coord = (imgCoordPixel*ViewportInfo[0].xy);
-+		vec2 pl = (imgCoord+(-imgCoordPixel));
-+		vec4 left = textureGather(Sampler0,coord, mode);
-+
-+		float edgeVote = abs(left.z - left.y) + abs(color[mode] - left.y)  + abs(color[mode] - left.z) ;
-+		if(edgeVote > edgeThreshold)
-+		{
-+			coord.x += ViewportInfo[0].x;
-+
-+			vec4 right = textureGather(Sampler0,coord + vec2(ViewportInfo[0].x, 0.0), mode);
-+			vec4 upDown;
-+			upDown.xy = textureGather(Sampler0,coord + vec2(0.0, -ViewportInfo[0].y),mode).wz;
-+			upDown.zw  = textureGather(Sampler0,coord+ vec2(0.0, ViewportInfo[0].y), mode).yx;
-+
-+			float mean = (left.y+left.z+right.x+right.w)*0.25;
-+			left = left - vec4(mean);
-+			right = right - vec4(mean);
-+			upDown = upDown - vec4(mean);
-+			color.w =color[mode] - mean;
-+
-+			float sum = (((((abs(left.x)+abs(left.y))+abs(left.z))+abs(left.w))+(((abs(right.x)+abs(right.y))+abs(right.z))+abs(right.w)))+(((abs(upDown.x)+abs(upDown.y))+abs(upDown.z))+abs(upDown.w)));
-+			float std = 2.181818/sum;
-+
-+			vec2 aWY = weightY(pl.x, pl.y+1.0, upDown.x,std);
-+			aWY += weightY(pl.x-1.0, pl.y+1.0, upDown.y,std);
-+			aWY += weightY(pl.x-1.0, pl.y-2.0, upDown.z,std);
-+			aWY += weightY(pl.x, pl.y-2.0, upDown.w,std);
-+			aWY += weightY(pl.x+1.0, pl.y-1.0, left.x,std);
-+			aWY += weightY(pl.x, pl.y-1.0, left.y,std);
-+			aWY += weightY(pl.x, pl.y, left.z,std);
-+			aWY += weightY(pl.x+1.0, pl.y, left.w,std);
-+			aWY += weightY(pl.x-1.0, pl.y-1.0, right.x,std);
-+			aWY += weightY(pl.x-2.0, pl.y-1.0, right.y,std);
-+			aWY += weightY(pl.x-2.0, pl.y, right.z,std);
-+			aWY += weightY(pl.x-1.0, pl.y, right.w,std);
-+
-+			float finalY = aWY.y/aWY.x;
-+
-+			float maxY = max(max(left.y,left.z),max(right.x,right.w));
-+			float minY = min(min(left.y,left.z),min(right.x,right.w));
-+			finalY = clamp(edgeSharpness*finalY, minY, maxY);
-+
-+			float deltaY = finalY -color.w;
-+
-+			//smooth high contrast input
-+			deltaY = clamp(deltaY, -23.0 / 255.0, 23.0 / 255.0);
-+
-+			color.x = clamp((color.x+deltaY),0.0,1.0);
-+			color.y = clamp((color.y+deltaY),0.0,1.0);
-+			color.z = clamp((color.z+deltaY),0.0,1.0);
-+		}
-+	}
-+
-+	color.w = 1.0;  //assume alpha channel is not used
-+	fragColor.xyzw = color;
-+}
-Index: common/src/main/resources/assets/minecraft/shaders/core/gsr.json
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/common/src/main/resources/assets/minecraft/shaders/core/gsr.json b/common/src/main/resources/assets/minecraft/shaders/core/gsr.json
-new file mode 100644
---- /dev/null	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
-+++ b/common/src/main/resources/assets/minecraft/shaders/core/gsr.json	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
-@@ -0,0 +1,23 @@
-+{
-+  "blend": {
-+    "func": "add",
-+    "srcrgb": "srcalpha",
-+    "dstrgb": "1-srcalpha"
-+  },
-+  "vertex": "passthrough",
-+  "fragment": "gsr",
-+  "attributes": ["Position", "UV0"],
-+  "samplers": [
-+    {
-+      "name": "Sampler0"
-+    }
-+  ],
-+  "uniforms": [
-+    {
-+      "name": "ViewportInfo",
-+      "type": "float",
-+      "count": 4,
-+      "values": [0.0, 0.0, 1.0, 1.0]
-+    }
-+  ]
-+}
-Index: common/src/main/resources/assets/vivecraft/input/oculus_defaults.json
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/common/src/main/resources/assets/vivecraft/input/oculus_defaults.json b/common/src/main/resources/assets/vivecraft/input/oculus_defaults.json
---- a/common/src/main/resources/assets/vivecraft/input/oculus_defaults.json	(revision dc353aa386ade995285701136a94c3c25a3a3fe1)
-+++ b/common/src/main/resources/assets/vivecraft/input/oculus_defaults.json	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
-@@ -142,7 +142,7 @@
-             }
-           },
-           "mode": "button",
--          "path": "/user/hand/left/input/y"
-+          "path": "/user/hand/left/input/application_menu"
-         },
-         {
-           "inputs": {
-@@ -151,7 +151,7 @@
-             }
-           },
-           "mode": "button",
--          "path": "/user/hand/left/input/x"
-+          "path": "/user/hand/left/input/y"
-         }
-       ]
-     },
-@@ -243,7 +243,7 @@
-             }
-           },
-           "mode": "button",
--          "path": "/user/hand/left/input/trigger"
-+          "path": "/user/hand/left/input/x"
-         },
-         {
-           "inputs": {
-@@ -261,46 +261,52 @@
-             }
-           },
-           "mode": "button",
--          "path": "/user/hand/right/input/a"
-+          "path": "/user/hand/left/input/trigger"
-         },
-         {
-           "inputs": {
-             "click": {
-               "output": "/actions/ingame/in/key.jump"
-+            }
-+               },
-+               "mode" : "button",
-+               "path" : "/user/hand/right/input/a"
-             },
--            "position": {
--              "output": "/actions/ingame/in/vivecraft.key.freemovestrafe"
--            }
--          },
--          "mode": "joystick",
--          "path": "/user/hand/left/input/joystick"
--        },
--        {
--          "inputs": {
--            "position": {
--              "output": "/actions/ingame/in/vivecraft.key.rotateaxis"
--            }
--          },
--          "mode": "joystick",
--          "path": "/user/hand/right/input/joystick"
--        },
--        {
--          "inputs": {
--            "click": {
--              "output": "/actions/ingame/in/key.sneak"
--            }
--          },
--          "mode": "toggle_button",
--          "path": "/user/hand/right/input/joystick"
--        },
--        {
--          "inputs": {
--            "pull": {
-+            {
-+               "inputs" : {
-+                  "position" : {
-+                     "output" : "/actions/ingame/in/vivecraft.key.freemovestrafe"
-+                  }
-+               },
-+               "mode" : "joystick",
-+               "path" : "/user/hand/left/input/joystick"
-+            },
-+            {
-+               "inputs" : {
-+                  "position" : {
-+                     "output" : "/actions/ingame/in/vivecraft.key.rotateaxis"
-+                  }
-+               },
-+               "mode" : "joystick",
-+               "path" : "/user/hand/right/input/joystick"
-+            },
-+            {
-+               "inputs" : {
-+                  "click" : {
-+                     "output" : "/actions/ingame/in/key.sneak"
-+                  }
-+               },
-+               "mode" : "toggle_button",
-+               "path" : "/user/hand/right/input/joystick"
-+            },
-+            {
-+               "inputs" : {
-+                  "click": {
-               "output": "/actions/ingame/in/vivecraft.key.teleportfallback"
-             }
-           },
--          "mode": "trigger",
--          "path": "/user/hand/left/input/trigger"
-+          "mode": "button",
-+          "path": "/user/hand/left/input/x"
-         }
-       ]
-     },
 Index: common/src/main/resources/assets/vivecraft/input/vive_defaults.json
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
 diff --git a/common/src/main/resources/assets/vivecraft/input/vive_defaults.json b/common/src/main/resources/assets/vivecraft/input/vive_defaults.json
---- a/common/src/main/resources/assets/vivecraft/input/vive_defaults.json	(revision dc353aa386ade995285701136a94c3c25a3a3fe1)
-+++ b/common/src/main/resources/assets/vivecraft/input/vive_defaults.json	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
+--- a/common/src/main/resources/assets/vivecraft/input/vive_defaults.json	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/resources/assets/vivecraft/input/vive_defaults.json	(date 1712807490872)
 @@ -146,15 +146,12 @@
          },
          {
@@ -811,14 +595,293 @@ diff --git a/common/src/main/resources/assets/vivecraft/input/vive_defaults.json
    "options": {},
    "simulated_actions": []
  }
+Index: common/src/main/resources/assets/minecraft/shaders/core/gsr.fsh
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/resources/assets/minecraft/shaders/core/gsr.fsh b/common/src/main/resources/assets/minecraft/shaders/core/gsr.fsh
+new file mode 100644
+--- /dev/null	(date 1712807490871)
++++ b/common/src/main/resources/assets/minecraft/shaders/core/gsr.fsh	(date 1712807490871)
+@@ -0,0 +1,142 @@
++#version 450 core
++
++//============================================================================================================
++//
++//
++//                  Copyright (c) 2023, Qualcomm Innovation Center, Inc. All rights reserved.
++//                              SPDX-License-Identifier: BSD-3-Clause
++//
++//============================================================================================================
++
++precision mediump float;
++precision highp int;
++
++////////////////////////
++// USER CONFIGURATION //
++////////////////////////
++
++/*
++* Operation modes:
++* RGBA -> 1
++* RGBY -> 3
++* LERP -> 4
++*/
++#define OperationMode 1
++
++#define EdgeThreshold 4.0/255.0
++
++#define EdgeSharpness 2.0
++
++// #define UseUniformBlock
++
++////////////////////////
++////////////////////////
++////////////////////////
++
++#if defined(UseUniformBlock)
++layout (set=0, binding = 0) uniform UniformBlock
++{
++	highp vec4 ViewportInfo[1];
++};
++layout(set = 0, binding = 1) uniform mediump sampler2D Sampler0;
++#else
++uniform vec4 ViewportInfo[1];
++uniform sampler2D Sampler0;
++#endif
++
++in vec2 texCoordinates;
++out vec4 fragColor;
++
++float fastLanczos2(float x)
++{
++	float wA = x-4.0;
++	float wB = x*wA-wA;
++	wA *= wA;
++	return wB*wA;
++}
++vec2 weightY(float dx, float dy,float c, float std)
++{
++	float x = ((dx*dx)+(dy* dy))* 0.55 + clamp(abs(c)*std, 0.0, 1.0);
++	float w = fastLanczos2(x);
++	return vec2(w, w * c);
++}
++
++void main()
++{
++	const int mode = OperationMode;
++	float edgeThreshold = EdgeThreshold;
++	float edgeSharpness = EdgeSharpness;
++
++	vec4 color;
++	if(mode == 1)
++		color.xyz = textureLod(Sampler0,texCoordinates.xy,0.0).xyz;
++	else
++		color.xyzw = textureLod(Sampler0,texCoordinates.xy,0.0).xyzw;
++
++	float xCenter;
++	xCenter = abs(texCoordinates.x+-0.5);
++	float yCenter;
++	yCenter = abs(texCoordinates.y+-0.5);
++
++	//todo: config the SR region based on needs
++	//if ( mode!=4 && xCenter*xCenter+yCenter*yCenter<=0.4 * 0.4)
++	if ( mode!=4)
++	{
++		vec2 imgCoord = ((texCoordinates.xy*ViewportInfo[0].zw)+vec2(-0.5,0.5));
++		vec2 imgCoordPixel = floor(imgCoord);
++		vec2 coord = (imgCoordPixel*ViewportInfo[0].xy);
++		vec2 pl = (imgCoord+(-imgCoordPixel));
++		vec4 left = textureGather(Sampler0,coord, mode);
++
++		float edgeVote = abs(left.z - left.y) + abs(color[mode] - left.y)  + abs(color[mode] - left.z) ;
++		if(edgeVote > edgeThreshold)
++		{
++			coord.x += ViewportInfo[0].x;
++
++			vec4 right = textureGather(Sampler0,coord + vec2(ViewportInfo[0].x, 0.0), mode);
++			vec4 upDown;
++			upDown.xy = textureGather(Sampler0,coord + vec2(0.0, -ViewportInfo[0].y),mode).wz;
++			upDown.zw  = textureGather(Sampler0,coord+ vec2(0.0, ViewportInfo[0].y), mode).yx;
++
++			float mean = (left.y+left.z+right.x+right.w)*0.25;
++			left = left - vec4(mean);
++			right = right - vec4(mean);
++			upDown = upDown - vec4(mean);
++			color.w =color[mode] - mean;
++
++			float sum = (((((abs(left.x)+abs(left.y))+abs(left.z))+abs(left.w))+(((abs(right.x)+abs(right.y))+abs(right.z))+abs(right.w)))+(((abs(upDown.x)+abs(upDown.y))+abs(upDown.z))+abs(upDown.w)));
++			float std = 2.181818/sum;
++
++			vec2 aWY = weightY(pl.x, pl.y+1.0, upDown.x,std);
++			aWY += weightY(pl.x-1.0, pl.y+1.0, upDown.y,std);
++			aWY += weightY(pl.x-1.0, pl.y-2.0, upDown.z,std);
++			aWY += weightY(pl.x, pl.y-2.0, upDown.w,std);
++			aWY += weightY(pl.x+1.0, pl.y-1.0, left.x,std);
++			aWY += weightY(pl.x, pl.y-1.0, left.y,std);
++			aWY += weightY(pl.x, pl.y, left.z,std);
++			aWY += weightY(pl.x+1.0, pl.y, left.w,std);
++			aWY += weightY(pl.x-1.0, pl.y-1.0, right.x,std);
++			aWY += weightY(pl.x-2.0, pl.y-1.0, right.y,std);
++			aWY += weightY(pl.x-2.0, pl.y, right.z,std);
++			aWY += weightY(pl.x-1.0, pl.y, right.w,std);
++
++			float finalY = aWY.y/aWY.x;
++
++			float maxY = max(max(left.y,left.z),max(right.x,right.w));
++			float minY = min(min(left.y,left.z),min(right.x,right.w));
++			finalY = clamp(edgeSharpness*finalY, minY, maxY);
++
++			float deltaY = finalY -color.w;
++
++			//smooth high contrast input
++			deltaY = clamp(deltaY, -23.0 / 255.0, 23.0 / 255.0);
++
++			color.x = clamp((color.x+deltaY),0.0,1.0);
++			color.y = clamp((color.y+deltaY),0.0,1.0);
++			color.z = clamp((color.z+deltaY),0.0,1.0);
++		}
++	}
++
++	color.w = 1.0;  //assume alpha channel is not used
++	fragColor.xyzw = color;
++}
+Index: common/src/main/resources/assets/minecraft/shaders/core/gsr.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/resources/assets/minecraft/shaders/core/gsr.json b/common/src/main/resources/assets/minecraft/shaders/core/gsr.json
+new file mode 100644
+--- /dev/null	(date 1712807490871)
++++ b/common/src/main/resources/assets/minecraft/shaders/core/gsr.json	(date 1712807490871)
+@@ -0,0 +1,23 @@
++{
++  "blend": {
++    "func": "add",
++    "srcrgb": "srcalpha",
++    "dstrgb": "1-srcalpha"
++  },
++  "vertex": "passthrough",
++  "fragment": "gsr",
++  "attributes": ["Position", "UV0"],
++  "samplers": [
++    {
++      "name": "Sampler0"
++    }
++  ],
++  "uniforms": [
++    {
++      "name": "ViewportInfo",
++      "type": "float",
++      "count": 4,
++      "values": [0.0, 0.0, 1.0, 1.0]
++    }
++  ]
++}
+Index: common/src/main/java/org/vivecraft/mixin/client_vr/MinecraftVRMixin.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/java/org/vivecraft/mixin/client_vr/MinecraftVRMixin.java b/common/src/main/java/org/vivecraft/mixin/client_vr/MinecraftVRMixin.java
+--- a/common/src/main/java/org/vivecraft/mixin/client_vr/MinecraftVRMixin.java	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/java/org/vivecraft/mixin/client_vr/MinecraftVRMixin.java	(date 1712809203834)
+@@ -8,7 +8,6 @@
+ import com.mojang.blaze3d.shaders.ProgramManager;
+ import com.mojang.blaze3d.systems.RenderSystem;
+ import com.mojang.blaze3d.vertex.*;
+-import net.minecraft.ChatFormatting;
+ import net.minecraft.client.*;
+ import net.minecraft.client.gui.Font;
+ import net.minecraft.client.gui.Gui;
+@@ -26,7 +25,6 @@
+ import net.minecraft.client.server.IntegratedServer;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.network.chat.Component;
+-import net.minecraft.network.chat.HoverEvent;
+ import net.minecraft.server.packs.PackResources;
+ import net.minecraft.server.packs.resources.ReloadableResourceManager;
+ import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+@@ -52,12 +50,8 @@
+ import org.vivecraft.client.VRPlayersClient;
+ import org.vivecraft.client.VivecraftVRMod;
+ import org.vivecraft.client.extensions.RenderTargetExtension;
+-import org.vivecraft.client.gui.VivecraftClickEvent;
+ import org.vivecraft.client.gui.screens.ErrorScreen;
+-import org.vivecraft.client.gui.screens.GarbageCollectorScreen;
+-import org.vivecraft.client.gui.screens.UpdateScreen;
+ import org.vivecraft.client.network.ClientNetworking;
+-import org.vivecraft.client.utils.UpdateChecker;
+ import org.vivecraft.client.utils.Utils;
+ import org.vivecraft.client_vr.ClientDataHolderVR;
+ import org.vivecraft.client_vr.VRState;
+@@ -228,7 +222,6 @@
+     public Overlay vivecraft$initVivecraft(Overlay overlay) {
+         RenderPassManager.INSTANCE = new RenderPassManager((MainTarget) this.mainRenderTarget);
+         VRSettings.initSettings((Minecraft) (Object) this, this.gameDirectory);
+-        new Thread(UpdateChecker::checkForUpdates, "VivecraftUpdateThread").start();
+ 
+         // register a resource reload listener, to reload the menu world
+         resourceManager.registerReloadListener((ResourceManagerReloadListener) resourceManager -> {
+@@ -268,19 +261,6 @@
+         }
+     }
+ 
+-    @Inject(at = @At("TAIL"), method = "onGameLoadFinished")
+-    private void vivecraft$showGarbageCollectorScreen(CallbackInfo ci) {
+-        // set the Garbage collector screen here, when it got reset after loading, but don't set it when using quickplay, because it would be removed after loading has finished
+-        if (VRState.vrEnabled && !ClientDataHolderVR.getInstance().incorrectGarbageCollector.isEmpty()
+-            && !(screen instanceof LevelLoadingScreen
+-            || screen instanceof ReceivingLevelScreen
+-            || screen instanceof ConnectScreen
+-            || screen instanceof GarbageCollectorScreen)) {
+-            Minecraft.getInstance().setScreen(new GarbageCollectorScreen(ClientDataHolderVR.getInstance().incorrectGarbageCollector));
+-            ClientDataHolderVR.getInstance().incorrectGarbageCollector = "";
+-        }
+-    }
+-
+     @Inject(at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;delayedCrash:Ljava/util/function/Supplier;", shift = Shift.BEFORE), method = "destroy()V")
+     public void vivecraft$destroy(CallbackInfo info) {
+         try {
+@@ -622,28 +602,8 @@
+     public void vivecraft$vrTick(CallbackInfo info) {
+         ++ClientDataHolderVR.getInstance().tickCounter;
+ 
+-        // general chat notifications
+-        if (this.level != null) {
+-            if (!ClientDataHolderVR.getInstance().showedUpdateNotification && UpdateChecker.hasUpdate && (ClientDataHolderVR.getInstance().vrSettings.alwaysShowUpdates || !UpdateChecker.newestVersion.equals(ClientDataHolderVR.getInstance().vrSettings.lastUpdate))) {
+-                ClientDataHolderVR.getInstance().vrSettings.lastUpdate = UpdateChecker.newestVersion;
+-                ClientDataHolderVR.getInstance().vrSettings.saveOptions();
+-                ClientDataHolderVR.getInstance().showedUpdateNotification = true;
+-                this.gui.getChat().addMessage(Component.translatable("vivecraft.messages.updateAvailable", Component.literal(UpdateChecker.newestVersion).withStyle(ChatFormatting.ITALIC, ChatFormatting.GREEN))
+-                    .withStyle(style -> style
+-                        .withClickEvent(new VivecraftClickEvent(VivecraftClickEvent.VivecraftAction.OPEN_SCREEN, new UpdateScreen()))
+-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("vivecraft.messages.click")))));
+-            }
+-        }
+-
+         // VR enabled only chat notifications
+         if (VRState.vrInitialized && this.level != null && ClientDataHolderVR.getInstance().vrPlayer != null) {
+-            if (!ClientDataHolderVR.getInstance().incorrectGarbageCollector.isEmpty()) {
+-                if (!(screen instanceof GarbageCollectorScreen)) {
+-                    // set the Garbage collector screen here, quickplay is used, this shouldn't be triggered in other cases, since the GarbageCollectorScreen resets the string on closing
+-                    Minecraft.getInstance().setScreen(new GarbageCollectorScreen(ClientDataHolderVR.getInstance().incorrectGarbageCollector));
+-                }
+-                ClientDataHolderVR.getInstance().incorrectGarbageCollector = "";
+-            }
+             if (ClientDataHolderVR.getInstance().vrPlayer.chatWarningTimer >= 0 && --ClientDataHolderVR.getInstance().vrPlayer.chatWarningTimer == 0) {
+                 boolean showMessage = !ClientNetworking.displayedChatWarning || ClientDataHolderVR.getInstance().vrSettings.showServerPluginMissingMessageAlways;
+ 
 Index: common/src/main/resources/vivecraft.accesswidener
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
 diff --git a/common/src/main/resources/vivecraft.accesswidener b/common/src/main/resources/vivecraft.accesswidener
---- a/common/src/main/resources/vivecraft.accesswidener	(revision dc353aa386ade995285701136a94c3c25a3a3fe1)
-+++ b/common/src/main/resources/vivecraft.accesswidener	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
+--- a/common/src/main/resources/vivecraft.accesswidener	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/resources/vivecraft.accesswidener	(date 1712807490872)
 @@ -6,6 +6,8 @@
  accessible field net/minecraft/client/model/geom/ModelPart cubes Ljava/util/List;
  accessible field net/minecraft/client/model/geom/ModelPart$Cube polygons [Lnet/minecraft/client/model/geom/ModelPart$Polygon;
@@ -828,38 +891,252 @@ diff --git a/common/src/main/resources/vivecraft.accesswidener b/common/src/main
  # custom player modle rendering
  accessible field net/minecraft/client/model/PlayerModel slim Z
  extendable method net/minecraft/client/renderer/entity/player/PlayerRenderer setModelProperties (Lnet/minecraft/client/player/AbstractClientPlayer;)V
-Index: common/src/main/resources/vivecraft.mixins.json
+Index: common/src/main/java/org/vivecraft/client_vr/ClientDataHolderVR.java
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
-diff --git a/common/src/main/resources/vivecraft.mixins.json b/common/src/main/resources/vivecraft.mixins.json
---- a/common/src/main/resources/vivecraft.mixins.json	(revision dc353aa386ade995285701136a94c3c25a3a3fe1)
-+++ b/common/src/main/resources/vivecraft.mixins.json	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
-@@ -28,6 +28,7 @@
-     "client_vr.KeyboardInputVRMixin",
-     "client_vr.MinecraftVRMixin",
-     "client_vr.MouseHandlerVRMixin",
-+    "client_vr.OpenVRMixin",
-     "client_vr.OptionsVRMixin",
-     "client_vr.blaze3d.audio.LibraryVRMixin",
-     "client_vr.blaze3d.platform.GlStateManagerVRMixin",
+diff --git a/common/src/main/java/org/vivecraft/client_vr/ClientDataHolderVR.java b/common/src/main/java/org/vivecraft/client_vr/ClientDataHolderVR.java
+--- a/common/src/main/java/org/vivecraft/client_vr/ClientDataHolderVR.java	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/java/org/vivecraft/client_vr/ClientDataHolderVR.java	(date 1712809203821)
+@@ -44,7 +44,6 @@
+     public VRSettings vrSettings;
+     public boolean integratedServerLaunchInProgress = false;
+     public boolean grabScreenShot = false;
+-    public String incorrectGarbageCollector = "";
+     public long frameIndex = 0L;
+     public RenderPass currentPass;
+     public int tickCounter;
+Index: common/src/main/resources/assets/vivecraft/input/oculus_defaults.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/resources/assets/vivecraft/input/oculus_defaults.json b/common/src/main/resources/assets/vivecraft/input/oculus_defaults.json
+--- a/common/src/main/resources/assets/vivecraft/input/oculus_defaults.json	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/resources/assets/vivecraft/input/oculus_defaults.json	(date 1712807490871)
+@@ -142,7 +142,7 @@
+             }
+           },
+           "mode": "button",
+-          "path": "/user/hand/left/input/y"
++          "path": "/user/hand/left/input/application_menu"
+         },
+         {
+           "inputs": {
+@@ -151,7 +151,7 @@
+             }
+           },
+           "mode": "button",
+-          "path": "/user/hand/left/input/x"
++          "path": "/user/hand/left/input/y"
+         }
+       ]
+     },
+@@ -243,7 +243,7 @@
+             }
+           },
+           "mode": "button",
+-          "path": "/user/hand/left/input/trigger"
++          "path": "/user/hand/left/input/x"
+         },
+         {
+           "inputs": {
+@@ -261,46 +261,52 @@
+             }
+           },
+           "mode": "button",
+-          "path": "/user/hand/right/input/a"
++          "path": "/user/hand/left/input/trigger"
+         },
+         {
+           "inputs": {
+             "click": {
+               "output": "/actions/ingame/in/key.jump"
++            }
++               },
++               "mode" : "button",
++               "path" : "/user/hand/right/input/a"
+             },
+-            "position": {
+-              "output": "/actions/ingame/in/vivecraft.key.freemovestrafe"
+-            }
+-          },
+-          "mode": "joystick",
+-          "path": "/user/hand/left/input/joystick"
+-        },
+-        {
+-          "inputs": {
+-            "position": {
+-              "output": "/actions/ingame/in/vivecraft.key.rotateaxis"
+-            }
+-          },
+-          "mode": "joystick",
+-          "path": "/user/hand/right/input/joystick"
+-        },
+-        {
+-          "inputs": {
+-            "click": {
+-              "output": "/actions/ingame/in/key.sneak"
+-            }
+-          },
+-          "mode": "toggle_button",
+-          "path": "/user/hand/right/input/joystick"
+-        },
+-        {
+-          "inputs": {
+-            "pull": {
++            {
++               "inputs" : {
++                  "position" : {
++                     "output" : "/actions/ingame/in/vivecraft.key.freemovestrafe"
++                  }
++               },
++               "mode" : "joystick",
++               "path" : "/user/hand/left/input/joystick"
++            },
++            {
++               "inputs" : {
++                  "position" : {
++                     "output" : "/actions/ingame/in/vivecraft.key.rotateaxis"
++                  }
++               },
++               "mode" : "joystick",
++               "path" : "/user/hand/right/input/joystick"
++            },
++            {
++               "inputs" : {
++                  "click" : {
++                     "output" : "/actions/ingame/in/key.sneak"
++                  }
++               },
++               "mode" : "toggle_button",
++               "path" : "/user/hand/right/input/joystick"
++            },
++            {
++               "inputs" : {
++                  "click": {
+               "output": "/actions/ingame/in/vivecraft.key.teleportfallback"
+             }
+           },
+-          "mode": "trigger",
+-          "path": "/user/hand/left/input/trigger"
++          "mode": "button",
++          "path": "/user/hand/left/input/x"
+         }
+       ]
+     },
+Index: common/src/main/java/org/vivecraft/client_vr/settings/VRSettings.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/java/org/vivecraft/client_vr/settings/VRSettings.java b/common/src/main/java/org/vivecraft/client_vr/settings/VRSettings.java
+--- a/common/src/main/java/org/vivecraft/client_vr/settings/VRSettings.java	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/java/org/vivecraft/client_vr/settings/VRSettings.java	(date 1712809203817)
+@@ -452,19 +452,17 @@
+     @SettingField(VrOptions.CHAT_MESSAGE_STENCIL)
+     public boolean showChatMessageStencil = true;
+     @SettingField(value = VrOptions.VR_ENABLED, config = "vrEnabled")
+-    public boolean vrEnabled = false;
++    public boolean vrEnabled = true;
+     @SettingField(VrOptions.VR_REMEMBER_ENABLED)
+     public boolean rememberVr = true;
+     @SettingField(VrOptions.VR_HOTSWITCH)
+-    public boolean vrHotswitchingEnabled = true;
++    public boolean vrHotswitchingEnabled = false;
+     @SettingField(value = VrOptions.VR_TOGGLE_BUTTON_VISIBLE, config = "vrToggleButtonEnabled")
+-    public boolean vrToggleButtonEnabled = true;
++    public boolean vrToggleButtonEnabled = false;
+     @SettingField(value = VrOptions.VR_SETTINGS_BUTTON_VISIBLE, config = "vrSettingsButtonEnabled")
+     public boolean vrSettingsButtonEnabled = true;
+     @SettingField(value = VrOptions.VR_SETTINGS_BUTTON_POSITION, config = "vrSettingsButtonPositionLeft")
+     public boolean vrSettingsButtonPositionLeft = true;
+-    @SettingField
+-    public boolean disableGarbageCollectorMessage = false;
+     @SettingField
+     public boolean selfButtSparklesInFirstPerson = false;
+ 
+Index: common/src/main/java/org/vivecraft/client_vr/render/helpers/VRPassHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/java/org/vivecraft/client_vr/render/helpers/VRPassHelper.java b/common/src/main/java/org/vivecraft/client_vr/render/helpers/VRPassHelper.java
+--- a/common/src/main/java/org/vivecraft/client_vr/render/helpers/VRPassHelper.java	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/java/org/vivecraft/client_vr/render/helpers/VRPassHelper.java	(date 1712807490869)
+@@ -189,6 +189,11 @@
+             ProgramManager.glUseProgram(0);
+             checkGLError("post overlay" + eye);
+             mc.getProfiler().pop();
++
++            VRShaders.ViewportInfo.setSafe(0.0f, 0.0f,  dataHolder.vrRenderer.framebufferEye0.viewWidth, dataHolder.vrRenderer.framebufferEye0.viewHeight);
++            ((RenderTargetExtension) rendertarget).vivecraft$blitToScreen(VRShaders.gsrShader, 0, dataHolder.vrRenderer.framebufferEye0.viewWidth, dataHolder.vrRenderer.framebufferEye0.viewHeight, 0, false, 0,  0, true);
++            ProgramManager.glUseProgram(0);
++            checkGLError("post overlay" + eye);
+         }
+ 
+         if (dataHolder.currentPass == RenderPass.CAMERA) {
+Index: common/src/main/java/org/vivecraft/client_vr/VRState.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/java/org/vivecraft/client_vr/VRState.java b/common/src/main/java/org/vivecraft/client_vr/VRState.java
+--- a/common/src/main/java/org/vivecraft/client_vr/VRState.java	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/java/org/vivecraft/client_vr/VRState.java	(date 1712809288975)
+@@ -6,7 +6,6 @@
+ import org.apache.commons.lang3.StringUtils;
+ import org.lwjgl.glfw.GLFW;
+ import org.vivecraft.client.gui.screens.ErrorScreen;
+-import org.vivecraft.client.gui.screens.GarbageCollectorScreen;
+ import org.vivecraft.client_vr.gameplay.VRPlayer;
+ import org.vivecraft.client_vr.menuworlds.MenuWorldRenderer;
+ import org.vivecraft.client_vr.provider.nullvr.NullVR;
+@@ -76,12 +75,6 @@
+             dh.menuWorldRenderer.init();
+ 
+             try {
+-                String garbageCollector = StringUtils.getCommonPrefix(ManagementFactory.getGarbageCollectorMXBeans().stream().map(MemoryManagerMXBean::getName).toArray(String[]::new)).trim();
+-                if (garbageCollector.isEmpty()) {
+-                    garbageCollector = ManagementFactory.getGarbageCollectorMXBeans().get(0).getName();
+-                }
+-                VRSettings.logger.info("Garbage collector: {}", garbageCollector);
+-
+                 // Fully qualified name here to avoid any ambiguity
+                 com.sun.management.OperatingSystemMXBean os = (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+                 // Might as well log this stuff since we have it, could be useful for technical support
+@@ -89,14 +82,6 @@
+                 VRSettings.logger.info("Total physical memory: {} GiB", String.format("%.01f", os.getTotalMemorySize() / 1073741824.0F));
+                 VRSettings.logger.info("Free physical memory: {} GiB", String.format("%.01f", os.getFreeMemorySize() / 1073741824.0F));
+ 
+-                if (!garbageCollector.startsWith("ZGC") && !ClientDataHolderVR.getInstance().vrSettings.disableGarbageCollectorMessage) {
+-                    // At least 12 GiB RAM (minus 256 MiB for possible reserved) and 8 CPU threads
+-                    if (os.getTotalMemorySize() >= 1073741824L * 12L - 1048576L * 256L && Runtime.getRuntime().availableProcessors() >= 6) {
+-                        // store the garbage collector, as indicator, that the GarbageCollectorScreen should be shown, if it would be discarded
+-                        dh.incorrectGarbageCollector = garbageCollector;
+-                        Minecraft.getInstance().setScreen(new GarbageCollectorScreen(garbageCollector));
+-                    }
+-                }
+             } catch (Throwable e) {
+                 e.printStackTrace();
+             }
 Index: fabric/build.gradle
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
 diff --git a/fabric/build.gradle b/fabric/build.gradle
---- a/fabric/build.gradle	(revision dc353aa386ade995285701136a94c3c25a3a3fe1)
-+++ b/fabric/build.gradle	(revision 6f8603b3bd81eea1a7ebefff76d6305d891bad6c)
-@@ -69,10 +69,10 @@
+--- a/fabric/build.gradle	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/fabric/build.gradle	(date 1712807490873)
+@@ -62,10 +62,10 @@
      include(implementation('com.electronwill.night-config:toml:3.6.6'))
      include(implementation('com.electronwill.night-config:core:3.6.6'))
  
--    include(implementation("org.lwjgl:lwjgl-openvr:3.2.2"))
--    include(implementation("org.lwjgl:lwjgl-openvr:3.2.2:natives-linux"))
--    include(implementation("org.lwjgl:lwjgl-openvr:3.2.2:natives-macos"))
--    include(implementation("org.lwjgl:lwjgl-openvr:3.2.2:natives-windows"))
+-    include(implementation("org.lwjgl:lwjgl-openvr:3.3.1"))
+-    include(implementation("org.lwjgl:lwjgl-openvr:3.3.1:natives-linux"))
+-    include(implementation("org.lwjgl:lwjgl-openvr:3.3.1:natives-macos"))
+-    include(implementation("org.lwjgl:lwjgl-openvr:3.3.1:natives-windows"))
 +    include(implementation("org.lwjgl:lwjgl-openvr:3.3.2"))
 +    // include(implementation("org.lwjgl:lwjgl-openvr:3.2.2:natives-linux"))
 +    // include(implementation("org.lwjgl:lwjgl-openvr:3.2.2:natives-macos"))
@@ -867,3 +1144,398 @@ diff --git a/fabric/build.gradle b/fabric/build.gradle
  
  }
  
+Index: common/src/main/java/org/vivecraft/client_vr/provider/VRRenderer.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/java/org/vivecraft/client_vr/provider/VRRenderer.java b/common/src/main/java/org/vivecraft/client_vr/provider/VRRenderer.java
+--- a/common/src/main/java/org/vivecraft/client_vr/provider/VRRenderer.java	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/java/org/vivecraft/client_vr/provider/VRRenderer.java	(date 1712807490868)
+@@ -706,6 +706,8 @@
+                 ShaderHelper.checkGLError("init FOV shader");
+                 VRShaders.setupPortalShaders();
+                 ShaderHelper.checkGLError("init portal shader");
++                VRShaders.setupGSR();
++                ShaderHelper.checkGLError("init gsr shader");
+                 minecraft.gameRenderer.checkEntityPostEffect(minecraft.getCameraEntity());
+             } catch (Exception exception1) {
+                 System.out.println(exception1.getMessage());
+Index: common/src/main/resources/assets/minecraft/shaders/core/fovreduction.vsh
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.vsh b/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.vsh
+--- a/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.vsh	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.vsh	(date 1712807490870)
+@@ -7,5 +7,5 @@
+ out vec2 texCoordinates;
+ void main() {
+     gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
+-    texCoordinates = UV0;
++    texCoordinates = vec2(UV0.s, 1.0 - UV0.t);
+ }
+Index: common/src/main/resources/vivecraft.mixins.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/resources/vivecraft.mixins.json b/common/src/main/resources/vivecraft.mixins.json
+--- a/common/src/main/resources/vivecraft.mixins.json	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/resources/vivecraft.mixins.json	(date 1712807490872)
+@@ -27,6 +27,7 @@
+     "client_vr.KeyboardInputVRMixin",
+     "client_vr.MinecraftVRMixin",
+     "client_vr.MouseHandlerVRMixin",
++    "client_vr.OpenVRMixin",
+     "client_vr.OptionsVRMixin",
+     "client_vr.blaze3d.audio.LibraryVRMixin",
+     "client_vr.blaze3d.platform.GlStateManagerVRMixin",
+Index: common/src/main/java/org/vivecraft/client/gui/settings/GuiMainVRSettings.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/java/org/vivecraft/client/gui/settings/GuiMainVRSettings.java b/common/src/main/java/org/vivecraft/client/gui/settings/GuiMainVRSettings.java
+--- a/common/src/main/java/org/vivecraft/client/gui/settings/GuiMainVRSettings.java	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/java/org/vivecraft/client/gui/settings/GuiMainVRSettings.java	(date 1712812206022)
+@@ -15,17 +15,6 @@
+         new VROptionLayout(GuiOtherHUDSettings.class, VROptionLayout.Position.POS_RIGHT, 2.0F, true, "vivecraft.options.screen.guiother.button"),
+         new VROptionLayout(VRSettings.VrOptions.WORLD_SCALE, VROptionLayout.Position.POS_LEFT, 6.0F, true, null),
+         new VROptionLayout(VRSettings.VrOptions.WORLD_ROTATION, VROptionLayout.Position.POS_RIGHT, 6.0F, true, null),
+-        new VROptionLayout(VRSettings.VrOptions.PLAY_MODE_SEATED, (button, mousePos) -> {
+-            this.reinit = true;
+-
+-            if (!this.dataholder.vrSettings.seated) {
+-                this.isConfirm = true;
+-                return true;
+-            } else {
+-                return false;
+-            }
+-        }, VROptionLayout.Position.POS_LEFT, 0.0F, true, null),
+-        new VROptionLayout(VRSettings.VrOptions.VR_HOTSWITCH, VROptionLayout.Position.POS_RIGHT, 0.0F, true, null),
+         new VROptionLayout(VRSettings.VrOptions.LOW_HEALTH_INDICATOR, VROptionLayout.Position.POS_RIGHT, 7.0F, true, null)
+     };
+     private final VROptionLayout[] vrStandingOptions = new VROptionLayout[]{
+Index: common/src/main/resources/assets/minecraft/shaders/core/fovreduction.fsh
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.fsh b/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.fsh
+--- a/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.fsh	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/resources/assets/minecraft/shaders/core/fovreduction.fsh	(date 1712807490870)
+@@ -2,7 +2,7 @@
+ 
+ uniform sampler2D Sampler0;
+ uniform float circle_radius;
+-uniform float circle_offset = 0.1;
++uniform float circle_offset;
+ uniform float border;
+ 
+ uniform float water;
+@@ -22,7 +22,7 @@
+ const vec4 orange = vec4(.25, .125, 0, 1.0);
+ const float pi = 3.14159265;
+ 
+-uniform int eye = 0;
++uniform int eye;
+ 
+ void main(){
+ 
+Index: common/src/main/java/org/vivecraft/util/VLoader.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/java/org/vivecraft/util/VLoader.java b/common/src/main/java/org/vivecraft/util/VLoader.java
+new file mode 100644
+--- /dev/null	(date 1712807490870)
++++ b/common/src/main/java/org/vivecraft/util/VLoader.java	(date 1712807490870)
+@@ -0,0 +1,9 @@
++package org.vivecraft.util;
++
++public class VLoader {
++    static {
++        System.loadLibrary("openvr_api");
++    }
++
++    public static native void setEGLGlobal();
++}
+Index: common/src/main/java/org/vivecraft/server/ServerUtil.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/java/org/vivecraft/server/ServerUtil.java b/common/src/main/java/org/vivecraft/server/ServerUtil.java
+--- a/common/src/main/java/org/vivecraft/server/ServerUtil.java	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/java/org/vivecraft/server/ServerUtil.java	(date 1712809203827)
+@@ -6,7 +6,6 @@
+ import net.minecraft.core.registries.BuiltInRegistries;
+ import net.minecraft.network.chat.Component;
+ import net.minecraft.server.level.ServerPlayer;
+-import org.vivecraft.client.utils.UpdateChecker;
+ import org.vivecraft.server.config.ConfigBuilder;
+ import org.vivecraft.server.config.ServerConfig;
+ 
+@@ -71,20 +70,6 @@
+         }
+     }
+ 
+-    public static void sendUpdateNotificationIfOP(ServerPlayer serverPlayer) {
+-        if (ServerConfig.checkForUpdate.get()) {
+-            // don't send update notifications on singleplayer
+-            if (serverPlayer.server.isDedicatedServer() && serverPlayer.server.getPlayerList().isOp(serverPlayer.getGameProfile())) {
+-                // check for update on not the main thread
+-                scheduler.schedule(() -> {
+-                    if (UpdateChecker.checkForUpdates()) {
+-                        serverPlayer.sendSystemMessage(Component.literal("Vivecraft update available: §a" + UpdateChecker.newestVersion));
+-                    }
+-                }, 0, TimeUnit.MILLISECONDS);
+-            }
+-        }
+-    }
+-
+     public static void registerCommands(CommandDispatcher<net.minecraft.commands.CommandSourceStack> dispatcher) {
+         dispatcher.register(Commands.literal("vivecraft-server-config")
+             .requires(source -> source.hasPermission(4)).then(
+Index: common/src/main/java/org/vivecraft/mixin/server/players/PlayerListMixin.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/java/org/vivecraft/mixin/server/players/PlayerListMixin.java b/common/src/main/java/org/vivecraft/mixin/server/players/PlayerListMixin.java
+--- a/common/src/main/java/org/vivecraft/mixin/server/players/PlayerListMixin.java	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/java/org/vivecraft/mixin/server/players/PlayerListMixin.java	(date 1712809584083)
+@@ -16,6 +16,5 @@
+     @Inject(at = @At("HEAD"), method = "placeNewPlayer")
+     private void vivecraft$scheduleLoginMessages(Connection connection, ServerPlayer serverPlayer, CommonListenerCookie commonListenerCookie, CallbackInfo ci) {
+         ServerUtil.scheduleWelcomeMessageOrKick(serverPlayer);
+-        ServerUtil.sendUpdateNotificationIfOP(serverPlayer);
+     }
+ }
+Index: common/src/main/java/org/vivecraft/mixin/client_vr/OpenVRMixin.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/java/org/vivecraft/mixin/client_vr/OpenVRMixin.java b/common/src/main/java/org/vivecraft/mixin/client_vr/OpenVRMixin.java
+new file mode 100644
+--- /dev/null	(date 1712807490870)
++++ b/common/src/main/java/org/vivecraft/mixin/client_vr/OpenVRMixin.java	(date 1712807490870)
+@@ -0,0 +1,67 @@
++package org.vivecraft.mixin.client_vr;
++
++import org.lwjgl.openvr.OpenVR;
++import org.spongepowered.asm.mixin.Mixin;
++import org.spongepowered.asm.mixin.Overwrite;
++import org.spongepowered.asm.mixin.Shadow;
++
++import javax.annotation.Nullable;
++import java.util.function.LongFunction;
++
++import static org.lwjgl.openvr.VR.*;
++
++@Mixin(value = OpenVR.class, remap = false)
++public abstract class OpenVRMixin {
++    @Shadow @Nullable public static OpenVR.IVRSystem VRSystem;
++    @Shadow @Nullable public static OpenVR.IVRChaperone VRChaperone;
++    @Shadow @Nullable public static OpenVR.IVRChaperoneSetup VRChaperoneSetup;
++    @Shadow @Nullable public static OpenVR.IVRCompositor VRCompositor;
++    @Shadow @Nullable public static OpenVR.IVROverlay VROverlay;
++    @Shadow @Nullable public static OpenVR.IVRResources VRResources;
++    @Shadow @Nullable public static OpenVR.IVRRenderModels VRRenderModels;
++    @Shadow @Nullable public static OpenVR.IVRExtendedDisplay VRExtendedDisplay;
++    @Shadow @Nullable public static OpenVR.IVRSettings VRSettings;
++    @Shadow @Nullable public static OpenVR.IVRApplications VRApplications;
++    @Shadow @Nullable public static OpenVR.IVRTrackedCamera VRTrackedCamera;
++    @Shadow @Nullable public static OpenVR.IVRScreenshots VRScreenshots;
++    @Shadow @Nullable public static OpenVR.IVRDriverManager VRDriverManager;
++    @Shadow @Nullable public static OpenVR.IVRInput VRInput;
++    @Shadow @Nullable public static OpenVR.IVRIOBuffer VRIOBuffer;
++    @Shadow @Nullable public static OpenVR.IVRSpatialAnchors VRSpatialAnchors;
++    @Shadow @Nullable public static OpenVR.IVRNotifications VRNotifications;
++    @Shadow private static int token;
++
++    @Shadow
++    @Nullable
++    private static <T> T getGenericInterface(String interfaceNameVersion, LongFunction<T> supplier) {
++        return null;
++    }
++
++    /**
++     * @author
++     * @reason
++     */
++    @Overwrite
++    public static void create(int tok) {
++        token = tok;
++
++        VRSystem = getGenericInterface(IVRSystem_Version, OpenVR.IVRSystem::new);
++        VRChaperone = getGenericInterface(IVRChaperone_Version, OpenVR.IVRChaperone::new);
++        VRChaperoneSetup = getGenericInterface(IVRChaperoneSetup_Version, OpenVR.IVRChaperoneSetup::new);
++        VRCompositor = getGenericInterface(IVRCompositor_Version, OpenVR.IVRCompositor::new);
++        VROverlay = getGenericInterface(IVROverlay_Version, OpenVR.IVROverlay::new);
++        // VRResources = getGenericInterface(IVRResources_Version, OpenVR.IVRResources::new);
++        VRRenderModels = getGenericInterface(IVRRenderModels_Version, OpenVR.IVRRenderModels::new);
++        VRExtendedDisplay = getGenericInterface(IVRExtendedDisplay_Version, OpenVR.IVRExtendedDisplay::new);
++        VRSettings = getGenericInterface(IVRSettings_Version, OpenVR.IVRSettings::new);
++        VRApplications = getGenericInterface(IVRApplications_Version, OpenVR.IVRApplications::new);
++        // VRTrackedCamera = getGenericInterface(IVRTrackedCamera_Version, OpenVR.IVRTrackedCamera::new);
++        VRScreenshots = getGenericInterface(IVRScreenshots_Version, OpenVR.IVRScreenshots::new);
++        // VRDriverManager = getGenericInterface(IVRDriverManager_Version, OpenVR.IVRDriverManager::new);
++        VRInput = getGenericInterface(IVRInput_Version, OpenVR.IVRInput::new);
++        // VRIOBuffer = getGenericInterface(IVRIOBuffer_Version, OpenVR.IVRIOBuffer::new);
++        // VRSpatialAnchors = getGenericInterface(IVRSpatialAnchors_Version, OpenVR.IVRSpatialAnchors::new);
++        // VRDebug = getGenericInterface(IVRDebug_Version, OpenVR.IVRDebug::new);
++        // VRNotifications = getGenericInterface(IVRNotifications_Version, OpenVR.IVRNotifications::new);
++    }
++}
+Index: common/src/main/java/org/vivecraft/client_vr/provider/openvr_lwjgl/OpenVRStereoRenderer.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/java/org/vivecraft/client_vr/provider/openvr_lwjgl/OpenVRStereoRenderer.java b/common/src/main/java/org/vivecraft/client_vr/provider/openvr_lwjgl/OpenVRStereoRenderer.java
+--- a/common/src/main/java/org/vivecraft/client_vr/provider/openvr_lwjgl/OpenVRStereoRenderer.java	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/java/org/vivecraft/client_vr/provider/openvr_lwjgl/OpenVRStereoRenderer.java	(date 1712807490868)
+@@ -18,6 +18,7 @@
+ import org.vivecraft.client_vr.provider.VRRenderer;
+ import org.vivecraft.client_vr.render.RenderConfigException;
+ import org.vivecraft.client_vr.render.RenderPass;
++import org.vivecraft.util.VLoader;
+ 
+ import static org.lwjgl.openvr.VRCompositor.VRCompositor_PostPresentHandoff;
+ import static org.lwjgl.openvr.VRCompositor.VRCompositor_Submit;
+@@ -91,7 +92,7 @@
+         RenderSystem.bindTexture(this.LeftEyeTextureId);
+         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+-        GlStateManager._texImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, lwidth, lheight, 0, GL11.GL_RGBA, GL11.GL_INT, null);
++        GlStateManager._texImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, lwidth, lheight, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, null);
+         RenderSystem.bindTexture(i);
+         this.openvr.texType0.handle(this.LeftEyeTextureId);
+         this.openvr.texType0.eColorSpace(VR.EColorSpace_ColorSpace_Gamma);
+@@ -102,11 +103,13 @@
+         RenderSystem.bindTexture(this.RightEyeTextureId);
+         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+-        GlStateManager._texImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, lwidth, lheight, 0, GL11.GL_RGBA, GL11.GL_INT, null);
++        GlStateManager._texImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, lwidth, lheight, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, null);
+         RenderSystem.bindTexture(i);
+         this.openvr.texType1.handle(this.RightEyeTextureId);
+         this.openvr.texType1.eColorSpace(VR.EColorSpace_ColorSpace_Gamma);
+         this.openvr.texType1.eType(VR.ETextureType_TextureType_OpenGL);
++
++        VLoader.setEGLGlobal();
+     }
+ 
+     public boolean endFrame(RenderPass eye) {
+Index: common/src/main/java/org/vivecraft/mixin/client/gui/screens/TitleScreenMixin.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/java/org/vivecraft/mixin/client/gui/screens/TitleScreenMixin.java b/common/src/main/java/org/vivecraft/mixin/client/gui/screens/TitleScreenMixin.java
+--- a/common/src/main/java/org/vivecraft/mixin/client/gui/screens/TitleScreenMixin.java	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/java/org/vivecraft/mixin/client/gui/screens/TitleScreenMixin.java	(date 1712808769577)
+@@ -1,19 +1,14 @@
+ package org.vivecraft.mixin.client.gui.screens;
+ 
+ import net.minecraft.client.gui.GuiGraphics;
+-import net.minecraft.client.gui.components.Button;
+ import net.minecraft.client.gui.screens.Screen;
+ import net.minecraft.client.gui.screens.TitleScreen;
+-import net.minecraft.network.chat.CommonComponents;
+ import net.minecraft.network.chat.Component;
+ import org.spongepowered.asm.mixin.Mixin;
+-import org.spongepowered.asm.mixin.Unique;
+ import org.spongepowered.asm.mixin.injection.At;
+ import org.spongepowered.asm.mixin.injection.Inject;
+ import org.spongepowered.asm.mixin.injection.ModifyArg;
+ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+-import org.vivecraft.client.gui.screens.UpdateScreen;
+-import org.vivecraft.client.utils.UpdateChecker;
+ import org.vivecraft.client_vr.ClientDataHolderVR;
+ import org.vivecraft.client_vr.VRState;
+ 
+@@ -24,55 +19,8 @@
+         super(component);
+     }
+ 
+-    @Unique
+-    private Button vivecraft$vrModeButton;
+-    @Unique
+-    private Button vivecraft$updateButton;
+-
+-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/TitleScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", shift = At.Shift.AFTER, ordinal = 1), method = "createNormalMenuOptions")
+-    public void vivecraft$initFullGame(CallbackInfo ci) {
+-        vivecraft$addVRModeButton();
+-    }
+-
+-    @Inject(at = @At("TAIL"), method = "createDemoMenuOptions")
+-    public void vivecraft$initDemo(CallbackInfo ci) {
+-        vivecraft$addVRModeButton();
+-    }
+-
+-    @Unique
+-    private void vivecraft$addVRModeButton() {
+-
+-        vivecraft$vrModeButton = new Button.Builder(Component.translatable("vivecraft.gui.vr", VRState.vrEnabled ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF), (button) -> {
+-            VRState.vrEnabled = !VRState.vrEnabled;
+-            ClientDataHolderVR.getInstance().vrSettings.vrEnabled = VRState.vrEnabled;
+-            ClientDataHolderVR.getInstance().vrSettings.saveOptions();
+-
+-            button.setMessage(Component.translatable("vivecraft.gui.vr", VRState.vrEnabled ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF));
+-        })
+-            .size(56, 20)
+-            .pos(this.width / 2 + 104, this.height / 4 + 72)
+-            .build();
+-        vivecraft$vrModeButton.visible = ClientDataHolderVR.getInstance().vrSettings.vrToggleButtonEnabled;
+-
+-        this.addRenderableWidget(vivecraft$vrModeButton);
+-
+-        vivecraft$updateButton = new Button.Builder(Component.translatable("vivecraft.gui.update"), (button) -> minecraft.setScreen(new UpdateScreen()))
+-            .size(56, 20)
+-            .pos(this.width / 2 + 104, this.height / 4 + 96)
+-            .build();
+-
+-        vivecraft$updateButton.visible = UpdateChecker.hasUpdate;
+-
+-        this.addRenderableWidget(vivecraft$updateButton);
+-    }
+-
+     @Inject(at = @At("TAIL"), method = "render")
+     public void vivecraft$renderToolTip(GuiGraphics guiGraphics, int i, int j, float f, CallbackInfo ci) {
+-        vivecraft$updateButton.visible = UpdateChecker.hasUpdate;
+-
+-        if (vivecraft$vrModeButton.visible && vivecraft$vrModeButton.isMouseOver(i, j)) {
+-            guiGraphics.renderTooltip(font, font.split(Component.translatable("vivecraft.options.VR_ENABLED.tooltip"), Math.max(width / 2 - 43, 170)), i, j);
+-        }
+         if (VRState.vrInitialized && !VRState.vrRunning) {
+             Component hotswitchMessage = Component.translatable("vivecraft.messages.vrhotswitchinginfo");
+             guiGraphics.renderTooltip(font, font.split(hotswitchMessage, 280), width / 2 - 140 - 12, 17);
+Index: common/src/main/java/org/vivecraft/server/config/ServerConfig.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/common/src/main/java/org/vivecraft/server/config/ServerConfig.java b/common/src/main/java/org/vivecraft/server/config/ServerConfig.java
+--- a/common/src/main/java/org/vivecraft/server/config/ServerConfig.java	(revision aa05773834fad7c47eaf01612287bfde18d7065f)
++++ b/common/src/main/java/org/vivecraft/server/config/ServerConfig.java	(date 1712809978408)
+@@ -107,14 +107,6 @@
+             .push("debug")
+             .comment("will print clients that connect with vivecraft, and what version they are using, to the log.")
+             .define(false);
+-        checkForUpdate = builder
+-            .push("checkForUpdate")
+-            .comment("will check for a newer version and alert any OP when they login to the server.")
+-            .define(true);
+-        checkForUpdateType = builder
+-            .push("checkForUpdateType")
+-            .comment("What updates to check for.\n r: Release, b: Beta, a: Alpha")
+-            .defineInList("r", Arrays.asList("r", "b", "a"));
+         vr_only = builder
+             .push("vr_only")
+             .comment("Set to true to only allow VR players to play.\n If enabled, VR hotswitching will be automatically disabled.")
