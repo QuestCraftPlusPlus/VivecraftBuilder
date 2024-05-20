@@ -860,25 +860,4 @@ diff --git a/common/src/main/resources/vivecraft.mixins.json b/common/src/main/r
 +    "client_vr.OpenVRMixin",
      "client_vr.OptionsVRMixin",
      "client_vr.blaze3d.audio.LibraryVRMixin",
-     "client_vr.blaze3d.platform.GlStateManagerVRMixin",
-Index: fabric/build.gradle
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/fabric/build.gradle b/fabric/build.gradle
---- a/fabric/build.gradle	(revision d9687fa9192df712fc6182c493b1ee1595f26b51)
-+++ b/fabric/build.gradle	(revision de1f6240edcf20775203676963a707954320d914)
-@@ -63,9 +63,9 @@
-     include(implementation('com.electronwill.night-config:core:3.6.6'))
- 
-     include(implementation("org.lwjgl:lwjgl-openvr:3.3.2"))
--    include(implementation("org.lwjgl:lwjgl-openvr:3.3.2:natives-linux"))
--    include(implementation("org.lwjgl:lwjgl-openvr:3.3.2:natives-macos"))
--    include(implementation("org.lwjgl:lwjgl-openvr:3.3.2:natives-windows"))
-+    // include(implementation("org.lwjgl:lwjgl-openvr:3.2.2:natives-linux"))
-+    // include(implementation("org.lwjgl:lwjgl-openvr:3.2.2:natives-macos"))
-+    // include(implementation("org.lwjgl:lwjgl-openvr:3.2.2:natives-windows"))
- 
- }
- 
+     "client_vr.blaze3d.platform.GlStateManagerVRMixin",     
